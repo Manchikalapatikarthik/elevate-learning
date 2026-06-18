@@ -1,6 +1,23 @@
-import Link from "next/link";
+"use client";
 
+import Link from "next/link";
 import Navbar from "../components/Navbar";
+import { useEffect, useState } from "react";
+
+import { db } from "../../firebase";
+
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+} from "firebase/firestore";
+
+const availableSubjects: Record<string, string> = {
+  "Smart Antenna Systems": "/notes/smart-antenna-systems",
+  "Control Systems": "/notes/control-systems",
+  "Computer Networks": "/notes/computer-networks",
+};
 
 const semesters = [
   {
@@ -91,12 +108,39 @@ const semesters = [
 ];
 
 export default function NotesPage() {
+
+  const [uploadedNotes, setUploadedNotes] = useState<any[]>([]);
+
+  useEffect(() => {
+
+    const fetchNotes = async () => {
+
+      const q = query(
+        collection(db, "notes"),
+        orderBy("createdAt", "desc")
+      );
+
+      const snapshot = await getDocs(q);
+
+      const notesData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setUploadedNotes(notesData);
+
+    };
+
+    fetchNotes();
+
+  }, []);
+
   return (
     <main className="min-h-screen bg-black text-white">
 
       <Navbar />
 
-      {/* Hero Section */}
+      {/* HERO */}
       <section className="pt-40 pb-24 px-6 text-center">
 
         <h1 className="text-6xl md:text-7xl font-extrabold mb-8">
@@ -112,12 +156,13 @@ export default function NotesPage() {
 
       </section>
 
-      {/* Semester Cards */}
+      {/* SEMESTERS */}
       <section className="pb-32 px-6">
 
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-10">
 
           {semesters.map((sem, index) => (
+
             <div
               key={index}
               className="bg-zinc-950 border border-zinc-800 rounded-3xl p-10 hover:border-white hover:-translate-y-2 transition duration-300"
@@ -131,27 +176,10 @@ export default function NotesPage() {
 
                 {sem.subjects.map((subject, idx) => (
 
-                  subject === "Smart Antenna Systems" ? (
+                  availableSubjects[subject] ? (
 
                     <Link
-                      href="/notes/smart-antenna-systems"
-                      key={idx}
-                    >
-
-                      <div className="bg-black border border-zinc-800 rounded-2xl px-5 py-4 hover:border-white transition cursor-pointer">
-
-                        <p className="text-lg text-gray-300">
-                          {subject}
-                        </p>
-
-                      </div>
-
-                    </Link>
-
-                  ) : subject === "Control Systems" ? (
-
-                    <Link
-                      href="/notes/control-systems"
+                      href={availableSubjects[subject]}
                       key={idx}
                     >
 
@@ -169,11 +197,15 @@ export default function NotesPage() {
 
                     <div
                       key={idx}
-                      className="bg-black border border-zinc-800 rounded-2xl px-5 py-4 hover:border-white transition"
+                      className="bg-black border border-zinc-800 rounded-2xl px-5 py-4 opacity-70"
                     >
 
                       <p className="text-lg text-gray-300">
                         {subject}
+                      </p>
+
+                      <p className="text-sm text-gray-500 mt-2">
+                        Notes Coming Soon
                       </p>
 
                     </div>
@@ -185,7 +217,52 @@ export default function NotesPage() {
               </div>
 
             </div>
+
           ))}
+
+        </div>
+
+      </section>
+
+      {/* COMMUNITY NOTES */}
+      <section className="pb-32 px-6">
+
+        <div className="max-w-7xl mx-auto">
+
+          <h2 className="text-5xl font-extrabold mb-14 text-center">
+            Community Uploaded Notes
+          </h2>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            {uploadedNotes.map((note) => (
+
+              <div
+                key={note.id}
+                className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8"
+              >
+
+                <h3 className="text-2xl font-bold mb-4">
+                  {note.subject}
+                </h3>
+
+                <p className="text-gray-400 mb-2">
+                  {note.semester}
+                </p>
+
+                <p className="text-gray-500 mb-6">
+                  {note.unit}
+                </p>
+
+                <button className="bg-white text-black px-6 py-3 rounded-xl font-semibold">
+                  View Notes
+                </button>
+
+              </div>
+
+            ))}
+
+          </div>
 
         </div>
 
