@@ -1,6 +1,5 @@
 export default function Navbar() {
   return (
-
     <header className="fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-900">
 
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-5">
@@ -8,9 +7,15 @@ export default function Navbar() {
         {/* Logo */}
         <a
           href="/"
-          className="text-3xl font-extrabold text-white tracking-wide"
+          className="flex flex-col"
         >
-          Elevate Learning
+          <span className="text-3xl font-extrabold text-white tracking-wider">
+            ELEVIT
+          </span>
+
+          <span className="text-xs text-gray-400 tracking-wide">
+            by Elevate Orbit
+          </span>
         </a>
 
         {/* Navigation */}
@@ -34,7 +39,7 @@ export default function Navbar() {
             href="/blog"
             className="text-gray-300 hover:text-white transition duration-300"
           >
-            Blog
+            Insights
           </a>
 
           <a
@@ -70,6 +75,5 @@ export default function Navbar() {
       </div>
 
     </header>
-
   );
 }
