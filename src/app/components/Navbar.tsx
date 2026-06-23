@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Navbar() {
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-900">
@@ -5,7 +7,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-5">
 
         {/* Logo */}
-        <a
+        <Link
           href="/"
           className="flex flex-col"
         >
@@ -16,59 +18,59 @@ export default function Navbar() {
           <span className="text-xs text-gray-400 tracking-wide">
             by Elevate Orbit
           </span>
-        </a>
+        </Link>
 
         {/* Navigation */}
         <nav className="flex items-center gap-8 text-sm md:text-base">
 
-          <a
+          <Link
             href="/"
             className="text-gray-300 hover:text-white transition duration-300"
           >
             Home
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/about"
             className="text-gray-300 hover:text-white transition duration-300"
           >
             About
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/blog"
             className="text-gray-300 hover:text-white transition duration-300"
           >
             Insights
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/projects"
             className="text-gray-300 hover:text-white transition duration-300"
           >
             Projects
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/notes"
             className="text-gray-300 hover:text-white transition duration-300"
           >
             Notes
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/upload"
             className="text-gray-300 hover:text-white transition duration-300"
           >
             Upload
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/contact"
             className="text-gray-300 hover:text-white transition duration-300"
           >
             Contact
-          </a>
+          </Link>
 
         </nav>
 

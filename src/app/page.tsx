@@ -17,25 +17,31 @@ export default function Home() {
   
 
   useEffect(() => {
+  const introPlayed = localStorage.getItem("introPlayed");
+
+  if (introPlayed === "true") {
+    setPhase(4);
+    return;
+  }
 
   const timer1 = setTimeout(() => {
-  setPhase(2);
-}, 2000);
+    setPhase(2);
+  }, 2000);
 
-const timer2 = setTimeout(() => {
-  setPhase(3);
-}, 4500);
+  const timer2 = setTimeout(() => {
+    setPhase(3);
+  }, 4500);
 
-const timer3 = setTimeout(() => {
-  setPhase(4);
-}, 7000);
+  const timer3 = setTimeout(() => {
+    setPhase(4);
+    localStorage.setItem("introPlayed", "true");
+  }, 7000);
 
   return () => {
     clearTimeout(timer1);
     clearTimeout(timer2);
     clearTimeout(timer3);
   };
-
 }, []);
 
   return (
