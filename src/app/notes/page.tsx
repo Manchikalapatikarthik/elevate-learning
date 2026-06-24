@@ -15,6 +15,7 @@ import {
 
 const availableSubjects: Record<string, string> = {
   "Smart Antenna Systems": "/notes/smart-antenna-systems",
+  "CMOS VLSI Design": "/notes/cmos-vlsi-design",
   "Control Systems": "/notes/control-systems",
   "Computer Networks": "/notes/computer-networks",
 };
