@@ -1,208 +1,297 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
+import { useEffect, useState } from "react";
 
-type Resource = {
-  name: string;
-  path: string;
-  type: "Notes" | "PYQs" | "Videos" | "Assignments" | "Coming Soon";
+import { db } from "../../firebase";
+
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+} from "firebase/firestore";
+
+const availableSubjects: Record<string, string> = {
+  // Semester 1
+  "Electrical Technology": "/notes/electrical-technology",
+  "Electronic Devices": "/notes/electronic-devices",
+
+  // Semester 2
+  "Chemistry": "/notes/chemistry",
+  "Electrical Circuits and Network Analysis":
+    "/notes/electrical-circuits-and-network-analysis",
+
+  // Semester 3
+  "Signals and Systems": "/notes/signals-and-systems",
+  "Electromagnetic Field Theory":
+    "/notes/electromagnetic-field-theory",
+
+  // Semester 4
+  "Analog Integrated Circuits":
+    "/notes/analog-integrated-circuits",
+
+  // Semester 5
+  "Smart Antenna Systems": "/notes/smart-antenna-systems",
+  "CMOS VLSI Design": "/notes/cmos-vlsi-design",
+  "Control Systems": "/notes/control-systems",
+  "Microprocessor and Microcontroller":
+    "/notes/microprocessor-and-microcontroller",
+
+  // Semester 6
+  "Computer Networks": "/notes/computer-networks",
 };
 
-type Subject = {
-  title: string;
-  resources: Resource[];
-};
+const semesters = [
+  {
+    semester: "Semester 1",
+    subjects: [
+      "Matrices and Calculus",
+      "Physics",
+      "Engineering Drawing and Design",
+      "Electrical Technology",
+      "Problem Solving Techniques using C",
+      "Electronic Devices",
+    ],
+  },
 
-const subjectRegistry: Record<string, Subject> = {
-  "electrical-technology": {
-    title: "Electrical Technology",
-    resources: [
-      { name: "📖 Notes Set 1", path: "/notes/electrical-technology/Notes1", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-      { name: "📝 Assignments", path: "#", type: "Coming Soon" },
+  {
+    semester: "Semester 2",
+    subjects: [
+      "Technical English",
+      "Advanced Calculus and Statistics",
+      "Chemistry",
+      "Electrical Circuits and Network Analysis",
+      "Python Programming",
+      "Digital Logic Circuits",
     ],
   },
-  "electronic-devices": {
-    title: "Electronic Devices",
-    resources: [
-      { name: "📖 Notes Set 1", path: "/notes/electronic-devices/Notes1", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-      { name: "📝 Assignments", path: "#", type: "Coming Soon" },
-    ],
-  },
-  "chemistry": {
-    title: "Engineering Chemistry",
-    resources: [
-      { name: "📖 Notes Set 1", path: "/notes/chemistry/Notes1", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-      { name: "📝 Assignments", path: "#", type: "Coming Soon" },
-    ],
-  },
-  "electrical-circuits-and-network-analysis": {
-    title: "Electrical Circuits & Network Analysis",
-    resources: [
-      { name: "📖 Notes Set 1", path: "/notes/electrical-circuits-and-network-analysis/Notes1", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-      { name: "📝 Assignments", path: "#", type: "Coming Soon" },
-    ],
-  },
-  "signals-and-systems": {
-    title: "Signals and Systems",
-    resources: [
-      { name: "📖 Notes Set 1", path: "/notes/signals-and-systems/Notes1", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-      { name: "📝 Assignments", path: "#", type: "Coming Soon" },
-    ],
-  },
-  "analog-integrated-circuits": {
-    title: "Analog Integrated Circuits",
-    resources: [
-      { name: "📖 Notes Set 1", path: "/notes/analog-integrated-circuits/Notes1", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-      { name: "📝 Assignments", path: "#", type: "Coming Soon" },
-    ],
-  },
-  "microprocessor-and-microcontroller": {
-    title: "Microprocessor & Microcontroller",
-    resources: [
-      { name: "📖 Notes Part 1", path: "/notes/microprocessor-and-microcontroller/Notes1", type: "Notes" },
-      { name: "📖 Notes Part 2", path: "/notes/microprocessor-and-microcontroller/Notes2", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-      { name: "📝 Assignments", path: "#", type: "Coming Soon" },
-    ],
-  },
-  "smart-antenna-systems": {
-    title: "Smart Antenna Systems",
-    resources: [
-      { name: "📖 Full Course Notes", path: "/notes/smart-antenna-systems", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-    ],
-  },
-  "cmos-vlsi-design": {
-    title: "CMOS VLSI Design",
-    resources: [
-      { name: "📖 Full Course Notes", path: "/notes/cmos-vlsi-design", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-    ],
-  },
-  "control-systems": {
-    title: "Control Systems",
-    resources: [
-      { name: "📖 Full Course Notes", path: "/notes/control-systems", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-    ],
-  },
-  "computer-networks": {
-    title: "Computer Networks",
-    resources: [
-      { name: "📖 Full Course Notes", path: "/notes/computer-networks", type: "Notes" },
-      { name: "📄 Previous Year Questions", path: "#", type: "Coming Soon" },
-      { name: "🎥 Video Lectures", path: "#", type: "Coming Soon" },
-    ],
-  },
-};
 
-export default function SubjectLandingPage() {
-  const params = useParams();
-  const slug = params.subjectSlug as string;
-  const subject = subjectRegistry[slug];
+  {
+    semester: "Semester 3",
+    subjects: [
+      "Transform Techniques and Complex Analysis",
+      "Electronic Circuits",
+      "Signals and Systems",
+      "Electromagnetic Field Theory",
+      "Data Structures using C",
+      "Universal Human Values",
+    ],
+  },
 
-  if (!subject) {
-    return (
-      <main className="min-h-screen bg-black text-white">
-        <Navbar />
-        <section className="pt-44 flex flex-col items-center justify-center px-6 text-center">
-          <h1 className="text-5xl font-extrabold mb-4">Subject Not Found</h1>
-          <p className="text-gray-400 mb-8">The requested subject is not available.</p>
-          <Link href="/notes" className="bg-white text-black px-6 py-3 rounded-xl font-semibold hover:bg-zinc-200 transition">
-            Back to Notes
-          </Link>
-        </section>
-      </main>
-    );
-  }
+  {
+    semester: "Semester 4",
+    subjects: [
+      "Fourier Series and Numerical Methods",
+      "Probability and Random Process",
+      "Analog Integrated Circuits",
+      "Analog and Digital Communication",
+      "Digital Signal Processing",
+      "Design Thinking and Innovations",
+    ],
+  },
+
+  {
+    semester: "Semester 5",
+    subjects: [
+      "Smart Antenna Systems",
+      "CMOS VLSI Design",
+      "Control Systems",
+      "Microprocessor and Microcontroller",
+      "Industry 5.0 for Electronics Engineers",
+    ],
+  },
+
+  {
+    semester: "Semester 6",
+    subjects: [
+      "Computer Networks",
+      "HDL Digital Design",
+      "Embedded Systems",
+    ],
+  },
+
+  {
+    semester: "Semester 7",
+    subjects: [
+      "Microwave and Optical Communication",
+      "Cognitive IoT",
+      "Project Work Phase I",
+    ],
+  },
+
+  {
+    semester: "Semester 8",
+    subjects: [
+      "Professional Elective 5",
+      "Professional Elective 6",
+      "Project Work Phase II",
+    ],
+  },
+];
+
+export default function NotesPage() {
+
+  const [uploadedNotes, setUploadedNotes] = useState<any[]>([]);
+
+  useEffect(() => {
+
+    const fetchNotes = async () => {
+
+      const q = query(
+        collection(db, "notes"),
+        orderBy("createdAt", "desc")
+      );
+
+      const snapshot = await getDocs(q);
+
+      const notesData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setUploadedNotes(notesData);
+
+    };
+
+    fetchNotes();
+
+  }, []);
 
   return (
     <main className="min-h-screen bg-black text-white">
+
       <Navbar />
 
-      <section className="pt-44 pb-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          
-          {/* Header */}
-          <div className="mb-16 max-w-5xl">
-            <Link href="/notes" className="text-zinc-500 hover:text-white transition text-sm flex items-center gap-2 mb-4">
-              ← Back to Semesters
-            </Link>
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight text-white">
-              {subject.title}
-            </h1>
-            {/* 3. Improved subject description copywriting */}
-            <p className="text-zinc-400 mt-4 text-lg">
-              Access notes, previous year questions, assignments, video lectures, and additional learning resources for this subject.
-            </p>
-          </div>
+      {/* HERO */}
+      <section className="pt-40 pb-24 px-6 text-center">
 
-          {/* Resources Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {subject.resources.map((resource, idx) =>
-              resource.type === "Coming Soon" ? (
-                <div
-                  key={idx}
-                  className="bg-zinc-950/40 border border-zinc-900 border-dashed rounded-2xl p-8 opacity-40 h-40 flex flex-col justify-between hover:opacity-60 transition duration-300"
-                >
-                  <h2 className="text-xl font-bold text-zinc-500 mb-3">
-                    {resource.name}
-                  </h2>
-                  <p className="text-zinc-600 text-sm">Coming Soon</p>
-                </div>
-              ) : (
-                <Link href={resource.path} key={idx} className="block">
-                  {/* 2. Added hover:shadow-xl hover:shadow-white/5 for deep dark canvas lighting */}
-                  <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 hover:border-white hover:bg-zinc-900 hover:-translate-y-1 hover:shadow-xl hover:shadow-white/5 transition-all duration-300 cursor-pointer flex flex-col justify-between h-40 group">
-                    <h2 className="text-2xl font-bold text-zinc-100 group-hover:text-white line-clamp-2">
-                      {resource.name}
-                    </h2>
-                    <div className="flex justify-between items-center mt-4">
-                      {/* 1. Dynamic themed layout badges */}
-                      <span
-                        className={`text-xs uppercase tracking-wider px-3 py-1 rounded-full border font-semibold
-                          ${
-                            resource.type === "Notes"
-                              ? "bg-blue-950/40 text-blue-300 border-blue-800"
-                              : resource.type === "PYQs"
-                              ? "bg-green-950/40 text-green-300 border-green-800"
-                              : resource.type === "Videos"
-                              ? "bg-red-950/40 text-red-300 border-red-800"
-                              : resource.type === "Assignments"
-                              ? "bg-yellow-950/40 text-yellow-300 border-yellow-800"
-                              : "bg-zinc-900 text-zinc-400 border-zinc-800"
-                          }`}
-                      >
-                        {resource.type}
-                      </span>
-                      <span className="text-zinc-500 group-hover:text-white transition text-xl">→</span>
+        <h1 className="text-6xl md:text-7xl font-extrabold mb-8">
+          Elevate Notes
+        </h1>
+
+        <p className="text-gray-400 text-xl leading-9 max-w-5xl mx-auto">
+          Access structured semester-wise engineering notes,
+          AI-enhanced explanations, important questions,
+          handwritten notes, detailed concepts,
+          and exam-focused learning resources.
+        </p>
+
+      </section>
+
+      {/* SEMESTERS */}
+      <section className="pb-32 px-6">
+
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-10">
+
+          {semesters.map((sem, index) => (
+
+            <div
+              key={index}
+              className="bg-zinc-950 border border-zinc-800 rounded-3xl p-10 hover:border-white hover:-translate-y-2 transition duration-300"
+            >
+
+              <h2 className="text-4xl font-bold mb-8">
+                {sem.semester}
+              </h2>
+
+              <div className="space-y-4">
+
+                {sem.subjects.map((subject, idx) => (
+
+                  availableSubjects[subject] ? (
+
+                    <Link
+                      href={availableSubjects[subject]}
+                      key={idx}
+                    >
+
+                      <div className="bg-black border border-zinc-800 rounded-2xl px-5 py-4 hover:border-white transition cursor-pointer">
+
+                        <p className="text-lg text-gray-300">
+                          {subject}
+                        </p>
+
+                      </div>
+
+                    </Link>
+
+                  ) : (
+
+                    <div
+                      key={idx}
+                      className="bg-black border border-zinc-800 rounded-2xl px-5 py-4 opacity-70"
+                    >
+
+                      <p className="text-lg text-gray-300">
+                        {subject}
+                      </p>
+
+                      <p className="text-sm text-gray-500 mt-2">
+                        Notes Coming Soon
+                      </p>
+
                     </div>
-                  </div>
-                </Link>
-              )
-            )}
+
+                  )
+
+                ))}
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </section>
+
+      {/* COMMUNITY NOTES */}
+      <section className="pb-32 px-6">
+
+        <div className="max-w-7xl mx-auto">
+
+          <h2 className="text-5xl font-extrabold mb-14 text-center">
+            Community Uploaded Notes
+          </h2>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            {uploadedNotes.map((note) => (
+
+              <div
+                key={note.id}
+                className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8"
+              >
+
+                <h3 className="text-2xl font-bold mb-4">
+                  {note.subject}
+                </h3>
+
+                <p className="text-gray-400 mb-2">
+                  {note.semester}
+                </p>
+
+                <p className="text-gray-500 mb-6">
+                  {note.unit}
+                </p>
+
+                <button className="bg-white text-black px-6 py-3 rounded-xl font-semibold">
+                  View Notes
+                </button>
+
+              </div>
+
+            ))}
+
           </div>
 
         </div>
+
       </section>
+
     </main>
   );
 }
