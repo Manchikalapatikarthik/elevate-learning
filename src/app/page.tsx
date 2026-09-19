@@ -1,240 +1,175 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Navbar from "./components/Navbar";
-import {
-  BookOpen,
-  Newspaper,
-  Cpu,
-  Video,
-  Briefcase,
-  FolderOpen,
-} from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { GraduationCap, ShieldCheck, Orbit } from "lucide-react";
 
-export default function Home() {
-  const [phase, setPhase] = useState(1);
-
-  useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setPhase(2);
-    }, 2000);
-
-    const timer2 = setTimeout(() => {
-      setPhase(3);
-    }, 4500);
-
-    const timer3 = setTimeout(() => {
-      setPhase(4);
-    }, 7000);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
-  }, []);
-
+export default function LandingPage() {
   return (
-    <>
-      <AnimatePresence>
-        {phase < 4 && (
+    <main className="relative min-h-screen overflow-hidden bg-black text-white">
+      {/* Background glow */}
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/[0.04] blur-3xl" />
+
+      {/* Orbit ring */}
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{
+          duration: 30,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-zinc-800"
+      />
+
+      {/* Second orbit ring */}
+      <motion.div
+        animate={{ rotate: -360 }}
+        transition={{
+          duration: 45,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-zinc-900"
+      />
+
+      {/* Main content */}
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-12">
+        <div className="w-full max-w-5xl text-center">
+
+          {/* Brand */}
           <motion.div
-            className="fixed inset-0 bg-black flex items-center justify-center z-50"
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
           >
-            <div className="absolute w-[700px] h-[700px] bg-white/10 blur-3xl rounded-full" />
+            <div className="mb-4 flex items-center justify-center gap-3">
+              <Orbit size={28} className="text-zinc-300" />
 
-            {phase === 1 && (
-              <div className="flex gap-24">
-                <motion.h1
-                  initial={{ x: -400, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{
-                    duration: 2.5,
-                    ease: "easeInOut",
-                  }}
-                  className="text-4xl md:text-6xl font-extrabold text-white"
-                >
-                  ELEVATE
-                </motion.h1>
+              <span className="text-sm uppercase tracking-[0.4em] text-zinc-500">
+                Elevate Orbit
+              </span>
+            </div>
 
-                <motion.h1
-                  initial={{ x: 400, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{
-                    duration: 2.5,
-                    ease: "easeInOut",
-                  }}
-                  className="text-4xl md:text-6xl font-extrabold text-white"
-                >
-                  ORBIT
-                </motion.h1>
-              </div>
-            )}
+            <h1 className="bg-gradient-to-r from-white via-gray-300 to-gray-600 bg-clip-text text-6xl font-extrabold tracking-tight text-transparent md:text-8xl">
+              ELEVIT
+            </h1>
 
-            {phase === 2 && (
-              <motion.h1
-                initial={{
-                  scale: 0.8,
-                  opacity: 0,
-                }}
-                animate={{
-                  scale: [0.95, 1.02, 1],
-                  opacity: 1,
-                }}
-                transition={{
-                  duration: 1.5,
-                  ease: "easeInOut",
-                }}
-                className="text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-white via-gray-300 to-gray-600 bg-clip-text text-transparent"
-              >
-                ELEVIT
-              </motion.h1>
-            )}
-
-            {phase === 3 && (
-              <motion.h1
-                animate={{
-                  scale: 0.18,
-                  x: -520,
-                  y: -235,
-                  opacity: 0.9,
-                }}
-                transition={{
-                  duration: 2,
-                  ease: "easeInOut",
-                }}
-                className="text-6xl md:text-8xl font-extrabold bg-gradient-to-r from-white via-gray-300 to-gray-600 bg-clip-text text-transparent"
-              >
-                ELEVIT
-              </motion.h1>
-            )}
+            <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-zinc-400 md:text-lg">
+              Where Notes, Projects, Research, Innovation, Careers,
+              AI Tools and Technology Orbit Around Students.
+            </p>
           </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* MAIN WEBSITE */}
-      <main
-        className={`min-h-screen bg-black text-white overflow-hidden transition-opacity duration-1000 ${
-          phase < 4 ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        <Navbar />
+          {/* Selection heading */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.8,
+              delay: 0.25,
+            }}
+            className="mt-14"
+          >
+            <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">
+              Choose how you want to enter
+            </p>
+          </motion.div>
 
-        {/* HERO SECTION */}
-        <section className="relative flex flex-col items-center justify-center h-[85vh] text-center px-6 overflow-hidden">
-          <div className="absolute w-[600px] h-[600px] bg-white/10 blur-3xl rounded-full"></div>
+          {/* User + Admin */}
+          <div className="mx-auto mt-8 grid max-w-3xl gap-6 md:grid-cols-2">
 
-          <h1 className="relative text-6xl md:text-8xl font-extrabold mb-6 bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent">
-            ELEVATE ORBIT
-          </h1>
-
-          <p className="relative text-xl text-gray-300 max-w-4xl mb-10 leading-9">
-            Where Notes, Projects, Research, Innovation, Careers, AI Tools and
-            Technology Orbit Around Students.
-          </p>
-
-          <div className="relative flex gap-6">
-            <a
-              href="/notes"
-              className="bg-white text-black px-8 py-4 rounded-full font-semibold hover:scale-105 hover:bg-gray-200 transition duration-300 shadow-2xl shadow-white/20"
+            {/* USER */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.8,
+                delay: 0.4,
+              }}
             >
-              Explore Notes
-            </a>
+              <Link
+                href="/home"
+                className="group block rounded-3xl border border-zinc-800 bg-zinc-950 p-8 text-left transition duration-300 hover:-translate-y-2 hover:border-white hover:bg-zinc-900 hover:shadow-2xl hover:shadow-white/10"
+              >
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-800 bg-black">
+                  <GraduationCap
+                    size={28}
+                    className="text-zinc-300 transition group-hover:text-white"
+                  />
+                </div>
 
-            <a
-              href="/blog"
-              className="border border-gray-600 px-8 py-4 rounded-full hover:bg-zinc-900 hover:scale-105 transition duration-300"
+                <h2 className="text-2xl font-bold">
+                  Continue as User
+                </h2>
+
+                <p className="mt-3 text-sm leading-6 text-zinc-500">
+                  Explore notes, insights, projects, resources,
+                  careers and the complete ELEVIT ecosystem.
+                </p>
+
+                <div className="mt-7 text-sm font-semibold text-white">
+                  Enter ELEVIT
+                  <span className="ml-2 transition-all duration-300 group-hover:ml-4">
+                    →
+                  </span>
+                </div>
+              </Link>
+            </motion.div>
+
+            {/* ADMIN */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.8,
+                delay: 0.55,
+              }}
             >
-              Explore Insights
-            </a>
-          </div>
-        </section>
-
-        {/* ECOSYSTEM SECTION */}
-        <section className="pb-32 px-6 bg-black">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-20">
-              <h2 className="text-5xl md:text-6xl font-bold mb-6">
-                The ELEVIT Ecosystem
-              </h2>
-
-              <p className="text-gray-400 text-lg max-w-4xl mx-auto leading-8">
-                A complete student-centered ecosystem where learning, innovation,
-                research, projects, career development, and technology resources
-                come together.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* NOTES */}
-              <a
-                href="/notes"
-                className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-white hover:-translate-y-3 hover:shadow-2xl hover:shadow-white/10 transition duration-300"
+              <Link
+                href="/admin/login"
+                className="group block rounded-3xl border border-zinc-800 bg-zinc-950 p-8 text-left transition duration-300 hover:-translate-y-2 hover:border-white hover:bg-zinc-900 hover:shadow-2xl hover:shadow-white/10"
               >
-                <BookOpen size={42} className="mb-4 text-white" />
-                <h3 className="text-3xl font-bold mb-4">ELEVIT Notes</h3>
-                <p className="text-gray-400 leading-8 text-lg">
-                  Semester-wise engineering notes, handwritten resources and exam
-                  preparation.
-                </p>
-              </a>
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-800 bg-black">
+                  <ShieldCheck
+                    size={28}
+                    className="text-zinc-300 transition group-hover:text-white"
+                  />
+                </div>
 
-              {/* INSIGHTS */}
-              <a
-                href="/blog"
-                className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-white hover:-translate-y-3 hover:shadow-2xl hover:shadow-white/10 transition duration-300"
-              >
-                <Newspaper size={42} className="mb-4 text-white" />
-                <h3 className="text-3xl font-bold mb-4">ELEVIT Insights</h3>
-                <p className="text-gray-400 leading-8 text-lg">
-                  Engineering blogs, research articles, technology trends and
-                  innovation insights.
-                </p>
-              </a>
+                <h2 className="text-2xl font-bold">
+                  Admin Login
+                </h2>
 
-              {/* LABS */}
-              <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-white hover:-translate-y-3 hover:shadow-2xl hover:shadow-white/10 transition duration-300">
-                <Cpu size={42} className="mb-4 text-white" />
-                <h3 className="text-3xl font-bold mb-4">ELEVIT Labs</h3>
-                <p className="text-gray-400 leading-8 text-lg">
-                  IoT systems, embedded projects, FPGA research, AI hardware and
-                  innovation.
+                <p className="mt-3 text-sm leading-6 text-zinc-500">
+                  Access the secure Elevate Orbit administration
+                  area and manage platform content.
                 </p>
-              </div>
 
-              {/* MEDIA */}
-              <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-white hover:-translate-y-3 hover:shadow-2xl hover:shadow-white/10 transition duration-300">
-                <Video size={42} className="mb-4 text-white" />
-                <h3 className="text-3xl font-bold mb-4">ELEVIT Media</h3>
-                <p className="text-gray-400 leading-8 text-lg">
-                  Video explanations, tutorials, visual learning and AI-powered
-                  education.
-                </p>
-              </div>
+                <div className="mt-7 text-sm font-semibold text-white">
+                  Admin Portal
+                  <span className="ml-2 transition-all duration-300 group-hover:ml-4">
+                    →
+                  </span>
+                </div>
+              </Link>
+            </motion.div>
 
-              {/* CAREERS */}
-              <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-white hover:-translate-y-3 hover:shadow-2xl hover:shadow-white/10 transition duration-300">
-                <Briefcase size={42} className="mb-4 text-white" />
-                <h3 className="text-3xl font-bold mb-4">ELEVIT Careers</h3>
-                <p className="text-gray-400 leading-8 text-lg">
-                  Placement preparation, interview guidance and career roadmaps.
-                </p>
-              </div>
-
-              {/* RESOURCES */}
-              <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 hover:border-white hover:-translate-y-3 hover:shadow-2xl hover:shadow-white/10 transition duration-300">
-                <FolderOpen size={42} className="mb-4 text-white" />
-                <h3 className="text-3xl font-bold mb-4">ELEVIT Resources</h3>
-                <p className="text-gray-400 leading-8 text-lg">
-                  PDFs, cheat sheets, study materials and productivity resources.
-                </p>
-              </div>
-            </div>
           </div>
-        </section>
-      </main>
-    </>
+
+          {/* Footer */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{
+              duration: 0.8,
+              delay: 0.9,
+            }}
+            className="mt-12 text-xs tracking-wide text-zinc-600"
+          >
+            © {new Date().getFullYear()} Elevate Orbit
+          </motion.p>
+        </div>
+      </div>
+    </main>
   );
 }
