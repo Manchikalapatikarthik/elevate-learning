@@ -1,296 +1,526 @@
 "use client";
 
 import Link from "next/link";
-import Navbar from "../components/Navbar";
-import { useEffect, useState } from "react";
-
-import { db } from "../../firebase";
-
+import { useEffect, useMemo, useState } from "react";
 import {
-  collection,
-  getDocs,
-  query,
-  orderBy,
-} from "firebase/firestore";
+  BookOpen,
+  FileText,
+  ArrowRight,
+  Search,
+} from "lucide-react";
+
+import Navbar from "../components/Navbar";
+
+/* =========================================================
+   SUBJECTS WITH DEDICATED NOTE PAGES
+========================================================= */
 
 const availableSubjects: Record<string, string> = {
-  // Semester 1
-  "Electrical Technology": "/notes/electrical-technology",
-  "Electronic Devices": "/notes/electronic-devices",
+  "Electrical Technology":
+    "/notes/electrical-technology",
 
-  // Semester 2
-  "Chemistry": "/notes/chemistry",
+  "Electronic Devices":
+    "/notes/electronic-devices",
+
+  Chemistry:
+    "/notes/chemistry",
+
   "Electrical Circuits and Network Analysis":
     "/notes/electrical-circuits-and-network-analysis",
 
-  // Semester 3
-  "Signals and Systems": "/notes/signals-and-systems",
+  "Signals and Systems":
+    "/notes/signals-and-systems",
+
   "Electromagnetic Field Theory":
     "/notes/electromagnetic-field-theory",
 
-  // Semester 4
   "Analog Integrated Circuits":
     "/notes/analog-integrated-circuits",
 
-  // Semester 5
-  "Smart Antenna Systems": "/notes/smart-antenna-systems",
-  "CMOS VLSI Design": "/notes/cmos-vlsi-design",
-  "Control Systems": "/notes/control-systems",
+  "Smart Antenna Systems":
+    "/notes/smart-antenna-systems",
+
+  "CMOS VLSI Design":
+    "/notes/cmos-vlsi-design",
+
+  "Control Systems":
+    "/notes/control-systems",
+
   "Microprocessor and Microcontroller":
     "/notes/microprocessor-and-microcontroller",
 
-  // Semester 6
-  "Computer Networks": "/notes/computer-networks",
+  "Computer Networks":
+    "/notes/computer-networks",
 };
 
-const semesters = [
-  {
-    semester: "Semester 1",
-    subjects: [
-      "Matrices and Calculus",
-      "Physics",
-      "Engineering Drawing and Design",
-      "Electrical Technology",
-      "Problem Solving Techniques using C",
-      "Electronic Devices",
-    ],
-  },
+/* =========================================================
+   ALL SUBJECTS
+   No semester sections
+========================================================= */
 
-  {
-    semester: "Semester 2",
-    subjects: [
-      "Technical English",
-      "Advanced Calculus and Statistics",
-      "Chemistry",
-      "Electrical Circuits and Network Analysis",
-      "Python Programming",
-      "Digital Logic Circuits",
-    ],
-  },
+const subjects = [
+  "Matrices and Calculus",
+  "Physics",
+  "Engineering Drawing and Design",
+  "Electrical Technology",
+  "Problem Solving Techniques using C",
+  "Electronic Devices",
 
-  {
-    semester: "Semester 3",
-    subjects: [
-      "Transform Techniques and Complex Analysis",
-      "Electronic Circuits",
-      "Signals and Systems",
-      "Electromagnetic Field Theory",
-      "Data Structures using C",
-      "Universal Human Values",
-    ],
-  },
+  "Technical English",
+  "Advanced Calculus and Statistics",
+  "Chemistry",
+  "Electrical Circuits and Network Analysis",
+  "Python Programming",
+  "Digital Logic Circuits",
 
-  {
-    semester: "Semester 4",
-    subjects: [
-      "Fourier Series and Numerical Methods",
-      "Probability and Random Process",
-      "Analog Integrated Circuits",
-      "Analog and Digital Communication",
-      "Digital Signal Processing",
-      "Design Thinking and Innovations",
-    ],
-  },
+  "Transform Techniques and Complex Analysis",
+  "Electronic Circuits",
+  "Signals and Systems",
+  "Electromagnetic Field Theory",
+  "Data Structures using C",
+  "Universal Human Values",
 
-  {
-    semester: "Semester 5",
-    subjects: [
-      "Smart Antenna Systems",
-      "CMOS VLSI Design",
-      "Control Systems",
-      "Microprocessor and Microcontroller",
-      "Industry 5.0 for Electronics Engineers",
-    ],
-  },
+  "Fourier Series and Numerical Methods",
+  "Probability and Random Process",
+  "Analog Integrated Circuits",
+  "Analog and Digital Communication",
+  "Digital Signal Processing",
+  "Design Thinking and Innovations",
 
-  {
-    semester: "Semester 6",
-    subjects: [
-      "Computer Networks",
-      "HDL Digital Design",
-      "Embedded Systems",
-    ],
-  },
+  "Smart Antenna Systems",
+  "CMOS VLSI Design",
+  "Control Systems",
+  "Microprocessor and Microcontroller",
+  "Industry 5.0 for Electronics Engineers",
 
-  {
-    semester: "Semester 7",
-    subjects: [
-      "Microwave and Optical Communication",
-      "Cognitive IoT",
-      "Project Work Phase I",
-    ],
-  },
+  "Computer Networks",
+  "HDL Digital Design",
+  "Embedded Systems",
 
-  {
-    semester: "Semester 8",
-    subjects: [
-      "Professional Elective 5",
-      "Professional Elective 6",
-      "Project Work Phase II",
-    ],
-  },
+  "Microwave and Optical Communication",
+  "Cognitive IoT",
+  "Project Work Phase I",
+
+  "Professional Elective 5",
+  "Professional Elective 6",
+  "Project Work Phase II",
 ];
 
-export default function NotesPage() {
+/* =========================================================
+   SUBJECT SEARCH NORMALIZATION
+========================================================= */
 
-  const [uploadedNotes, setUploadedNotes] = useState<any[]>([]);
+const normalizeText = (value: string) => {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+export default function NotesPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  /* =======================================================
+     READ SEARCH FROM URL
+  ======================================================= */
 
   useEffect(() => {
+    const params = new URLSearchParams(
+      window.location.search
+    );
 
-    const fetchNotes = async () => {
+    const search = params.get("search");
 
-      const q = query(
-        collection(db, "notes"),
-        orderBy("createdAt", "desc")
-      );
-
-      const snapshot = await getDocs(q);
-
-      const notesData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setUploadedNotes(notesData);
-
-    };
-
-    fetchNotes();
-
+    if (search) {
+      setSearchQuery(search);
+    }
   }, []);
+
+  /* =======================================================
+     SEARCH SUBJECTS
+  ======================================================= */
+
+  const filteredSubjects = useMemo(() => {
+    const query = normalizeText(searchQuery);
+
+    if (!query) {
+      return subjects;
+    }
+
+    return subjects.filter((subject) =>
+      normalizeText(subject).includes(query)
+    );
+  }, [searchQuery]);
+
+  /* =======================================================
+     SEARCH URL
+  ======================================================= */
+
+  const handleSearchChange = (
+    value: string
+  ) => {
+    setSearchQuery(value);
+
+    const trimmedValue = value.trim();
+
+    if (trimmedValue) {
+      window.history.replaceState(
+        {},
+        "",
+        `/notes?search=${encodeURIComponent(
+          trimmedValue
+        )}`
+      );
+    } else {
+      window.history.replaceState(
+        {},
+        "",
+        "/notes"
+      );
+    }
+  };
+
+  /* =======================================================
+     CLEAR SEARCH
+  ======================================================= */
+
+  const clearSearch = () => {
+    setSearchQuery("");
+
+    window.history.replaceState(
+      {},
+      "",
+      "/notes"
+    );
+  };
+
+  /* =======================================================
+     PAGE
+  ======================================================= */
 
   return (
     <main className="min-h-screen bg-black text-white">
 
+      {/* ===================================================
+          NAVBAR
+      =================================================== */}
+
       <Navbar />
 
-      {/* HERO */}
-      <section className="pt-40 pb-24 px-6 text-center">
+      {/* ===================================================
+          HERO
+      =================================================== */}
 
-        <h1 className="text-6xl md:text-7xl font-extrabold mb-8">
-          Elevate Notes
-        </h1>
+      <section className="px-6 pb-14 pt-32">
+        <div className="mx-auto max-w-7xl text-center">
 
-        <p className="text-gray-400 text-xl leading-9 max-w-5xl mx-auto">
-          Access structured semester-wise engineering notes,
-          AI-enhanced explanations, important questions,
-          handwritten notes, detailed concepts,
-          and exam-focused learning resources.
-        </p>
+          {/* ICON */}
 
-      </section>
-
-      {/* SEMESTERS */}
-      <section className="pb-32 px-6">
-
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-10">
-
-          {semesters.map((sem, index) => (
-
-            <div
-              key={index}
-              className="bg-zinc-950 border border-zinc-800 rounded-3xl p-10 hover:border-white hover:-translate-y-2 transition duration-300"
-            >
-
-              <h2 className="text-4xl font-bold mb-8">
-                {sem.semester}
-              </h2>
-
-              <div className="space-y-4">
-
-                {sem.subjects.map((subject, idx) => (
-
-                  availableSubjects[subject] ? (
-
-                    <Link
-                      href={availableSubjects[subject]}
-                      key={idx}
-                    >
-
-                      <div className="bg-black border border-zinc-800 rounded-2xl px-5 py-4 hover:border-white transition cursor-pointer">
-
-                        <p className="text-lg text-gray-300">
-                          {subject}
-                        </p>
-
-                      </div>
-
-                    </Link>
-
-                  ) : (
-
-                    <div
-                      key={idx}
-                      className="bg-black border border-zinc-800 rounded-2xl px-5 py-4 opacity-70"
-                    >
-
-                      <p className="text-lg text-gray-300">
-                        {subject}
-                      </p>
-
-                      <p className="text-sm text-gray-500 mt-2">
-                        Notes Coming Soon
-                      </p>
-
-                    </div>
-
-                  )
-
-                ))}
-
-              </div>
-
+          <div className="mb-7 flex justify-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-zinc-800 bg-zinc-950">
+              <BookOpen
+                size={42}
+                className="text-white"
+              />
             </div>
+          </div>
 
-          ))}
+          {/* MAIN TITLE */}
+
+          <h1 className="bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent sm:text-6xl md:text-7xl">
+            ELEVIT Notes
+          </h1>
+
+          {/* DESCRIPTION */}
+
+          <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-gray-400 sm:text-lg">
+            Engineering notes, study materials,
+            handwritten resources and exam preparation
+            for ECE students.
+          </p>
 
         </div>
-
       </section>
 
-      {/* COMMUNITY NOTES */}
-      <section className="pb-32 px-6">
+      {/* ===================================================
+          SEARCH
+      =================================================== */}
 
-        <div className="max-w-7xl mx-auto">
+      <section className="px-6 pb-16">
+        <div className="mx-auto max-w-3xl">
 
-          <h2 className="text-5xl font-extrabold mb-14 text-center">
-            Community Uploaded Notes
-          </h2>
+          <div className="flex items-center rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 shadow-2xl">
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* SEARCH ICON */}
 
-            {uploadedNotes.map((note) => (
+            <Search
+              size={21}
+              className="mr-3 shrink-0 text-zinc-500"
+            />
 
-              <div
-                key={note.id}
-                className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8"
+            {/* SEARCH INPUT */}
+
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(event) =>
+                handleSearchChange(
+                  event.target.value
+                )
+              }
+              placeholder="Search subjects..."
+              aria-label="Search subjects"
+              className="min-w-0 flex-1 bg-transparent py-2 text-base text-white outline-none placeholder:text-zinc-600"
+            />
+
+            {/* CLEAR */}
+
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="ml-3 rounded-full px-3 py-1.5 text-sm text-zinc-400 transition duration-200 hover:bg-zinc-900 hover:text-white"
               >
-
-                <h3 className="text-2xl font-bold mb-4">
-                  {note.subject}
-                </h3>
-
-                <p className="text-gray-400 mb-2">
-                  {note.semester}
-                </p>
-
-                <p className="text-gray-500 mb-6">
-                  {note.unit}
-                </p>
-
-                <button className="bg-white text-black px-6 py-3 rounded-xl font-semibold">
-                  View Notes
-                </button>
-
-              </div>
-
-            ))}
+                Clear
+              </button>
+            )}
 
           </div>
 
-        </div>
+          {/* SEARCH STATUS */}
 
+          {searchQuery && (
+            <div className="mt-5 text-center">
+
+              <p className="text-sm text-zinc-600">
+                Search results for
+              </p>
+
+              <p className="mt-1 text-lg font-medium text-zinc-300">
+                "{searchQuery}"
+              </p>
+
+            </div>
+          )}
+
+        </div>
       </section>
+
+      {/* ===================================================
+          SUBJECT DIRECTORY
+      =================================================== */}
+
+      <section className="px-6 pb-28">
+        <div className="mx-auto max-w-7xl">
+
+          {/* SECTION HEADER */}
+
+          <div className="mb-10">
+
+            <p className="mb-3 text-xs font-medium uppercase tracking-[0.3em] text-zinc-600">
+              ECE Study Resources
+            </p>
+
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Engineering Subjects
+            </h2>
+
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-500 sm:text-base">
+              Explore notes and learning resources
+              across the ECE curriculum.
+            </p>
+
+          </div>
+
+          {/* =================================================
+              NO SEARCH RESULTS
+          ================================================= */}
+
+          {filteredSubjects.length === 0 && (
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 px-8 py-16 text-center">
+
+              <Search
+                size={42}
+                className="mx-auto mb-5 text-zinc-700"
+              />
+
+              <h2 className="text-2xl font-semibold text-white">
+                No subject found
+              </h2>
+
+              <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-zinc-500">
+                We couldn't find a subject matching
+                "{searchQuery}".
+              </p>
+
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="mt-7 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
+              >
+                View All Subjects
+              </button>
+
+            </div>
+          )}
+
+          {/* =================================================
+              SUBJECT GRID
+          ================================================= */}
+
+          {filteredSubjects.length > 0 && (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+              {filteredSubjects.map(
+                (subject) => {
+
+                  const route =
+                    availableSubjects[
+                      subject
+                    ];
+
+                  /* =========================================
+                     SUBJECT WITH DEDICATED PAGE
+                  ========================================= */
+
+                  if (route) {
+                    return (
+                      <Link
+                        key={subject}
+                        href={route}
+                        className="group block rounded-3xl border border-zinc-800 bg-zinc-950 p-6 transition duration-300 hover:-translate-y-2 hover:border-white hover:shadow-2xl hover:shadow-white/10"
+                      >
+
+                        {/* ICON + ARROW */}
+
+                        <div className="mb-6 flex items-start justify-between">
+
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-zinc-800 bg-black">
+                            <BookOpen
+                              size={23}
+                              className="text-white"
+                            />
+                          </div>
+
+                          <ArrowRight
+                            size={20}
+                            className="text-zinc-700 transition duration-300 group-hover:translate-x-1 group-hover:text-white"
+                          />
+
+                        </div>
+
+                        {/* SUBJECT NAME */}
+
+                        <h3 className="text-xl font-semibold leading-7 text-white">
+                          {subject}
+                        </h3>
+
+                        {/* AVAILABLE */}
+
+                        <p className="mt-3 text-sm text-zinc-500">
+                          Notes available
+                        </p>
+
+                      </Link>
+                    );
+                  }
+
+                  /* =========================================
+                     SUBJECT WITHOUT PAGE
+                  ========================================= */
+
+                  return (
+                    <div
+                      key={subject}
+                      className="rounded-3xl border border-zinc-900 bg-zinc-950/70 p-6"
+                    >
+
+                      {/* ICON + STATUS */}
+
+                      <div className="mb-6 flex items-start justify-between">
+
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-zinc-900 bg-black">
+                          <FileText
+                            size={23}
+                            className="text-zinc-500"
+                          />
+                        </div>
+
+                        <span className="rounded-full border border-zinc-800 px-3 py-1 text-[10px] uppercase tracking-wider text-zinc-600">
+                          Coming Soon
+                        </span>
+
+                      </div>
+
+                      {/* SUBJECT NAME */}
+
+                      <h3 className="text-xl font-semibold leading-7 text-zinc-300">
+                        {subject}
+                      </h3>
+
+                      {/* DESCRIPTION */}
+
+                      <p className="mt-3 text-sm leading-6 text-zinc-600">
+                        Notes for this subject
+                        will be added soon.
+                      </p>
+
+                    </div>
+                  );
+                }
+              )}
+
+            </div>
+          )}
+
+        </div>
+      </section>
+
+      {/* ===================================================
+          SEO SUBJECT DIRECTORY TEXT
+      =================================================== */}
+
+      <section className="border-t border-zinc-900 px-6 py-20">
+        <div className="mx-auto max-w-5xl">
+
+          <h2 className="text-2xl font-bold sm:text-3xl">
+            ECE Notes and Study Materials
+          </h2>
+
+          <p className="mt-5 text-base leading-8 text-zinc-500">
+            ELEVIT provides engineering study resources
+            covering subjects such as Matrices and Calculus,
+            Physics, Electrical Technology, Electronic Devices,
+            Chemistry, Electrical Circuits and Network Analysis,
+            Digital Logic Circuits, Signals and Systems,
+            Electromagnetic Field Theory, Analog Integrated
+            Circuits, Digital Signal Processing, Smart Antenna
+            Systems, CMOS VLSI Design, Control Systems,
+            Microprocessor and Microcontroller, Computer
+            Networks, Embedded Systems and other ECE subjects.
+          </p>
+
+        </div>
+      </section>
+
+      {/* ===================================================
+          FOOTER
+      =================================================== */}
+
+      <footer className="border-t border-zinc-900 px-6 py-10">
+        <div className="mx-auto max-w-7xl text-center">
+
+          <p className="text-sm text-zinc-600">
+            ELEVIT · By Elevate Orbit
+          </p>
+
+        </div>
+      </footer>
 
     </main>
   );

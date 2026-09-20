@@ -1,122 +1,223 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function Navbar() {
-  const [showContribute, setShowContribute] = useState(false);
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
 
-  useEffect(() => {
-    // Show "Contribute" in the navbar after the popup is closed
-    const handleContributeClosed = () => {
-      setShowContribute(true);
-    };
+  /* =====================================================
+     OPEN CONTRIBUTE POPUP
+  ===================================================== */
 
-    window.addEventListener(
-      "elevate:contribute-closed",
-      handleContributeClosed
-    );
-
-    return () => {
-      window.removeEventListener(
-        "elevate:contribute-closed",
-        handleContributeClosed
-      );
-    };
-  }, []);
-
-  const openContribution = () => {
-    // Remove the navbar button while popup is open
-    setShowContribute(false);
-
-    // Tell the contribution widget to open
+  const openContribute = () => {
     window.dispatchEvent(
       new Event("elevate:open-contribute")
     );
+
+    setMobileOpen(false);
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-900">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-5">
+    <nav className="fixed left-0 right-0 top-0 z-[50] border-b border-zinc-900 bg-black/80 backdrop-blur-xl">
 
-        {/* ================= LOGO ================= */}
+      {/* =================================================
+          MAIN NAVBAR
+      ================================================= */}
+
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-6">
+
+        {/* =================================================
+            LOGO
+        ================================================= */}
+
         <Link
-          href="/"
-          className="flex flex-col"
+          href="/home"
+          className="group flex items-center"
         >
-          <span className="text-3xl font-extrabold text-white tracking-wider">
+          <span className="bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent transition duration-300 group-hover:from-white group-hover:to-white">
             ELEVIT
-          </span>
-
-          <span className="text-xs text-gray-400 tracking-wide">
-            by Elevate Orbit
           </span>
         </Link>
 
-        {/* ================= NAVIGATION ================= */}
-        <nav className="flex items-center gap-8 text-sm md:text-base">
+        {/* =================================================
+            DESKTOP NAVIGATION
+        ================================================= */}
+
+        <div className="hidden items-center gap-7 md:flex">
+
+          {/* HOME */}
 
           <Link
-            href="/"
-            className="text-gray-300 hover:text-white transition duration-300"
+            href="/home"
+            className="text-sm text-zinc-400 transition duration-200 hover:text-white"
           >
             Home
           </Link>
 
+          {/* ABOUT */}
+
           <Link
             href="/about"
-            className="text-gray-300 hover:text-white transition duration-300"
+            className="text-sm text-zinc-400 transition duration-200 hover:text-white"
           >
             About
           </Link>
 
+          {/* INSIGHTS */}
+
           <Link
             href="/blog"
-            className="text-gray-300 hover:text-white transition duration-300"
+            className="text-sm text-zinc-400 transition duration-200 hover:text-white"
           >
             Insights
           </Link>
 
+          {/* PROJECTS */}
+
           <Link
             href="/projects"
-            className="text-gray-300 hover:text-white transition duration-300"
+            className="text-sm text-zinc-400 transition duration-200 hover:text-white"
           >
             Projects
           </Link>
 
+          {/* NOTES */}
+
           <Link
             href="/notes"
-            className="text-gray-300 hover:text-white transition duration-300"
+            className="text-sm text-zinc-400 transition duration-200 hover:text-white"
           >
             Notes
           </Link>
 
-          <Link
-            href="/upload"
-            className="text-gray-300 hover:text-white transition duration-300"
-          >
-            Upload
-          </Link>
+          {/* =================================================
+              CONTRIBUTE
+          ================================================== */}
 
-          <Link
-            href="/contact"
-            className="text-gray-300 hover:text-white transition duration-300"
+          <button
+            type="button"
+            onClick={
+              openContribute
+            }
+            className="rounded-full border border-zinc-700 px-5 py-2.5 text-sm font-medium text-white transition duration-300 hover:border-white hover:bg-white hover:text-black"
           >
-            Contact
-          </Link>
+            Contribute
+          </button>
 
-          {/* ================= CONTRIBUTE ================= */}
-          {showContribute && (
+        </div>
+
+        {/* =================================================
+            MOBILE MENU BUTTON
+        ================================================= */}
+
+        <button
+          type="button"
+          onClick={() =>
+            setMobileOpen(
+              !mobileOpen
+            )
+          }
+          aria-label="Toggle menu"
+          aria-expanded={
+            mobileOpen
+          }
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-800 text-zinc-300 transition hover:border-zinc-600 hover:text-white md:hidden"
+        >
+          {mobileOpen ? "✕" : "☰"}
+        </button>
+
+      </div>
+
+      {/* =================================================
+          MOBILE NAVIGATION
+      ================================================= */}
+
+      {mobileOpen && (
+        <div className="border-t border-zinc-900 bg-black/95 px-5 pb-6 pt-4 backdrop-blur-xl md:hidden">
+
+          <div className="flex flex-col gap-2">
+
+            {/* HOME */}
+
+            <Link
+              href="/home"
+              onClick={() =>
+                setMobileOpen(false)
+              }
+              className="rounded-xl px-4 py-3 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            >
+              Home
+            </Link>
+
+            {/* ABOUT */}
+
+            <Link
+              href="/about"
+              onClick={() =>
+                setMobileOpen(false)
+              }
+              className="rounded-xl px-4 py-3 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            >
+              About
+            </Link>
+
+            {/* INSIGHTS */}
+
+            <Link
+              href="/blog"
+              onClick={() =>
+                setMobileOpen(false)
+              }
+              className="rounded-xl px-4 py-3 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            >
+              Insights
+            </Link>
+
+            {/* PROJECTS */}
+
+            <Link
+              href="/projects"
+              onClick={() =>
+                setMobileOpen(false)
+              }
+              className="rounded-xl px-4 py-3 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            >
+              Projects
+            </Link>
+
+            {/* NOTES */}
+
+            <Link
+              href="/notes"
+              onClick={() =>
+                setMobileOpen(false)
+              }
+              className="rounded-xl px-4 py-3 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            >
+              Notes
+            </Link>
+
+            {/* =================================================
+                CONTRIBUTE
+            ================================================== */}
+
             <button
-              onClick={openContribution}
-              className="text-gray-300 hover:text-white transition duration-300"
+              type="button"
+              onClick={
+                openContribute
+              }
+              className="mt-2 w-full rounded-xl border border-zinc-700 px-4 py-3 text-left text-sm font-medium text-white transition duration-300 hover:border-white hover:bg-white hover:text-black"
             >
               Contribute
             </button>
-          )}
 
-        </nav>
-      </div>
-    </header>
+          </div>
+
+        </div>
+      )}
+
+    </nav>
   );
 }
