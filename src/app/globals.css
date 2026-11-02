@@ -1,22 +1,110 @@
+
 @import "tailwindcss";
 
+/* ==========================================
+   ELEVIT — PERMANENT DESIGN SYSTEM
+========================================== */
+
 :root {
-  --background: #000000;
-  --foreground: #ededed;
+  --background: #070B16;
+  --foreground: #F8FAFC;
+
+  --elevit-bg: #070B16;
+  --elevit-surface: #141722;
+  --elevit-surface-hover: #1A2030;
+
+  --elevit-white: #F8FAFC;
+  --elevit-muted: #94A9C5;
+
+  --elevit-cyan: #38DDF2;
+  --elevit-blue: #4D9BF5;
+  --elevit-violet: #9B7BFF;
+
+  --elevit-border: rgba(148, 163, 184, 0.16);
+
+  --elevit-gradient: linear-gradient(
+    100deg,
+    #38DDF2 0%,
+    #4D9BF5 55%,
+    #9B7BFF 100%
+  );
 }
+
+/* ==========================================
+   GLOBAL STYLES
+========================================== */
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background: black;
-  color: white;
+  background: var(--elevit-bg);
+  color: var(--elevit-white);
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
 }
 
-/* Logo Zoom */
+/* ==========================================
+   REUSABLE ELEVIT COMPONENT STYLES
+========================================== */
+
+/* Gradient text */
+
+.elevit-gradient-text {
+  background: var(--elevit-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Reusable cards */
+
+.elevit-card {
+  background: var(--elevit-surface);
+  border: 1px solid var(--elevit-border);
+  border-radius: 22px;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+
+.elevit-card:hover {
+  transform: translateY(-4px);
+  background: var(--elevit-surface-hover);
+  border-color: rgba(56, 221, 242, 0.35);
+}
+
+/* Muted text */
+
+.elevit-muted {
+  color: var(--elevit-muted);
+}
+
+/* Primary button */
+
+.elevit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  background: var(--elevit-cyan);
+  color: #07111e;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.elevit-button:hover {
+  background: #8cecf8;
+  transform: translateY(-2px);
+}
+
+/* ==========================================
+   LOGO ZOOM ANIMATION
+========================================== */
 
 @keyframes logoZoom {
   0% {
@@ -34,7 +122,9 @@ body {
   animation: logoZoom 1.8s ease-out forwards;
 }
 
-/* Fade Up */
+/* ==========================================
+   FADE UP ANIMATION
+========================================== */
 
 @keyframes fadeUp {
   0% {
@@ -50,4 +140,52 @@ body {
 
 .animate-fadeUp {
   animation: fadeUp 2s ease-out forwards;
+}
+
+/* ==========================================
+   SELECTION
+========================================== */
+
+::selection {
+  background: rgba(56, 221, 242, 0.3);
+  color: #ffffff;
+}
+
+/* ==========================================
+   SCROLLBAR
+========================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070B16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #26364A;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #38DDF2;
+}
+
+/* ==========================================
+   ACCESSIBILITY
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

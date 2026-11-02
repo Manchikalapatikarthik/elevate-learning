@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -13,862 +14,295 @@ import {
   FolderOpen,
   Search,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
+import Link from "next/link";
 import { notesCatalog } from "../../lib/notesCatalog";
 
-/*
- * IMPORTANT:
- * sessionStorage means:
- *
- * - Intro plays once per browser tab/session
- * - Going Home → Notes → Home will NOT replay it
- * - Closing the tab and opening the site again WILL replay it
- */
-
-const INTRO_SESSION_KEY =
-  "elevateOrbitIntroPlayedThisSession";
+const INTRO_SESSION_KEY = "elevateOrbitIntroPlayedThisSession";
 
 export default function Home() {
+  // INTRO
+  const [introChecked, setIntroChecked] = useState(false);
+  const [firstVisitIntro, setFirstVisitIntro] = useState(false);
+  const [phase, setPhase] = useState(1);
+  const introInitialized = useRef(false);
 
-  /* =====================================================
-     INTRO
-  ===================================================== */
+  // SEARCH
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchActive, setSearchActive] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const [introChecked, setIntroChecked] =
-    useState(false);
-
-  const [firstVisitIntro, setFirstVisitIntro] =
-    useState(false);
-
-  const [phase, setPhase] =
-    useState(1);
-
-  const introInitialized =
-    useRef(false);
-
-  /* =====================================================
-     SEARCH
-  ===================================================== */
-
-  const [searchQuery, setSearchQuery] =
-    useState("");
-
-  const [searchActive, setSearchActive] =
-    useState(false);
-
-  const [showSuggestions, setShowSuggestions] =
-    useState(false);
-
-  /* =====================================================
-     NOTES NAVIGATION
-  ===================================================== */
-
-  const goToNotes = () => {
-
-    setSearchActive(false);
-
-    setShowSuggestions(false);
-
-    setSearchQuery("");
-
-    window.location.assign("/notes");
-  };
-
-  /* =====================================================
-     INTRO INITIALIZATION
-  ===================================================== */
-
+  // INTRO INITIALIZATION
   useEffect(() => {
-
-    if (introInitialized.current) {
-      return;
-    }
+    if (introInitialized.current) return;
 
     introInitialized.current = true;
 
-    /*
-     * Check sessionStorage.
-     *
-     * This is intentionally NOT localStorage.
-     */
     const alreadyPlayed =
-      sessionStorage.getItem(
-        INTRO_SESSION_KEY
-      ) === "true";
+      sessionStorage.getItem(INTRO_SESSION_KEY) === "true";
 
-    /*
-     * Returning to Home in the same tab
-     */
     if (alreadyPlayed) {
-
       setPhase(4);
-
       setIntroChecked(true);
-
       setFirstVisitIntro(false);
-
       return;
     }
 
-    /*
-     * First opening in this tab/session
-     */
     setFirstVisitIntro(true);
-
     setIntroChecked(true);
 
-    /* ==========================================
-       PHASE 1
-       0 → 2 seconds
-    ========================================== */
-
-    const timer1 = setTimeout(() => {
-
-      setPhase(2);
-
-    }, 2000);
-
-    /* ==========================================
-       PHASE 2
-       2 → 4.5 seconds
-    ========================================== */
-
-    const timer2 = setTimeout(() => {
-
-      setPhase(3);
-
-    }, 4500);
-
-    /* ==========================================
-       PHASE 3
-       4.5 → 7 seconds
-    ========================================== */
+    const timer1 = setTimeout(() => setPhase(2), 2000);
+    const timer2 = setTimeout(() => setPhase(3), 4500);
 
     const timer3 = setTimeout(() => {
-
       setPhase(4);
-
-      /*
-       * Mark intro completed for this
-       * browser tab/session.
-       */
-      sessionStorage.setItem(
-        INTRO_SESSION_KEY,
-        "true"
-      );
-
+      sessionStorage.setItem(INTRO_SESSION_KEY, "true");
     }, 7000);
 
     return () => {
-
       clearTimeout(timer1);
-
       clearTimeout(timer2);
-
       clearTimeout(timer3);
-
     };
-
   }, []);
 
-  /* =====================================================
-     CONTRIBUTION POPUP
-     ONLY AFTER THE INTRO
-  ===================================================== */
-
+  // CONTRIBUTION POPUP AFTER INTRO
   useEffect(() => {
+    if (!firstVisitIntro || phase !== 4) return;
 
-    if (
-      !firstVisitIntro ||
-      phase !== 4
-    ) {
-      return;
-    }
-
-    /*
-     * Give the homepage one second
-     * to appear before opening popup.
-     */
-    const contributionTimer =
-      setTimeout(() => {
-
-        window.dispatchEvent(
-          new Event(
-            "elevate:transition-complete"
-          )
-        );
-
-      }, 1000);
-
-    return () => {
-
-      clearTimeout(
-        contributionTimer
+    const contributionTimer = setTimeout(() => {
+      window.dispatchEvent(
+        new Event("elevate:transition-complete")
       );
+    }, 1000);
 
-    };
+    return () => clearTimeout(contributionTimer);
+  }, [firstVisitIntro, phase]);
 
-  }, [
-    firstVisitIntro,
-    phase,
-  ]);
-
-  /* =====================================================
-     ESC KEY
-  ===================================================== */
-
-  useEffect(() => {
-
-    const handleEscape =
-      (event: KeyboardEvent) => {
-
-        if (
-          event.key === "Escape" &&
-          searchActive
-        ) {
-
-          closeSearch();
-
-        }
-
-      };
-
-    window.addEventListener(
-      "keydown",
-      handleEscape
-    );
-
-    return () => {
-
-      window.removeEventListener(
-        "keydown",
-        handleEscape
-      );
-
-    };
-
-  }, [searchActive]);
-
-  /* =====================================================
-     LOCK SCROLL WHILE SEARCH IS OPEN
-  ===================================================== */
-
-  useEffect(() => {
-
-    if (searchActive) {
-
-      document.body.style.overflow =
-        "hidden";
-
-    } else {
-
-      document.body.style.overflow =
-        "";
-
-    }
-
-    return () => {
-
-      document.body.style.overflow =
-        "";
-
-    };
-
-  }, [searchActive]);
-
-  /* =====================================================
-     NORMALIZE SEARCH
-  ===================================================== */
-
-  const normalizeText = (
-    value: string
-  ) => {
-
-    return value
-
-      .toLowerCase()
-
-      .replace(
-        /[^a-z0-9\s]/g,
-        " "
-      )
-
-      .replace(
-        /\s+/g,
-        " "
-      )
-
-      .trim();
-
-  };
-
-  /* =====================================================
-     REAL SEARCH SUGGESTIONS
-  ===================================================== */
-
-  const searchSuggestions =
-    useMemo(() => {
-
-      const query =
-        normalizeText(
-          searchQuery
-        );
-
-      /*
-       * Nothing typed
-       */
-      if (!query) {
-
-        return notesCatalog.slice(
-          0,
-          10
-        );
-
-      }
-
-      const queryWords =
-        query.split(" ");
-
-      const results =
-        notesCatalog
-
-          .map((item) => {
-
-            const name =
-              normalizeText(
-                item.name
-              );
-
-            const aliases =
-              (
-                item.aliases ??
-                []
-              ).map(
-                normalizeText
-              );
-
-            const semester =
-              normalizeText(
-                item.semester
-              );
-
-            let score = 0;
-
-            /*
-             * Exact subject
-             */
-            if (
-              name === query
-            ) {
-
-              score = 100;
-
-            }
-
-            /*
-             * Exact alias
-             */
-            else if (
-              aliases.includes(
-                query
-              )
-            ) {
-
-              score = 95;
-
-            }
-
-            /*
-             * Subject begins with query
-             */
-            else if (
-              name.startsWith(
-                query
-              )
-            ) {
-
-              score = 90;
-
-            }
-
-            /*
-             * Alias begins with query
-             */
-            else if (
-              aliases.some(
-                (alias) =>
-                  alias.startsWith(
-                    query
-                  )
-              )
-            ) {
-
-              score = 85;
-
-            }
-
-            /*
-             * Subject word begins with query
-             */
-            else if (
-              queryWords.some(
-                (queryWord) =>
-                  name
-                    .split(" ")
-                    .some(
-                      (word) =>
-                        word.startsWith(
-                          queryWord
-                        )
-                    )
-              )
-            ) {
-
-              score = 80;
-
-            }
-
-            /*
-             * Subject contains query
-             */
-            else if (
-              name.includes(
-                query
-              )
-            ) {
-
-              score = 70;
-
-            }
-
-            /*
-             * Alias contains query
-             */
-            else if (
-              aliases.some(
-                (alias) =>
-                  alias.includes(
-                    query
-                  )
-              )
-            ) {
-
-              score = 65;
-
-            }
-
-            /*
-             * Semester match
-             */
-            else if (
-              semester.includes(
-                query
-              )
-            ) {
-
-              score = 40;
-
-            }
-
-            return {
-              ...item,
-              score,
-            };
-
-          })
-
-          .filter(
-            (item) =>
-              item.score > 0
-          )
-
-          .sort(
-            (a, b) =>
-              b.score - a.score
-          );
-
-      return results.slice(
-        0,
-        10
-      );
-
-    }, [searchQuery]);
-
-  /* =====================================================
-     OPEN SEARCH
-  ===================================================== */
-
-  const openSearch = () => {
-
-    setSearchActive(true);
-
-    setShowSuggestions(true);
-
-  };
-
-  /* =====================================================
-     CLOSE SEARCH
-  ===================================================== */
-
+  // CLOSE SEARCH
   const closeSearch = () => {
-
     setSearchActive(false);
-
     setShowSuggestions(false);
-
     setSearchQuery("");
-
   };
 
-  /* =====================================================
-     FIND SEARCH MATCH
-  ===================================================== */
+  // ESCAPE KEY
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && searchActive) {
+        closeSearch();
+      }
+    };
 
-  const findBestMatch = (
-    query: string
-  ) => {
+    window.addEventListener("keydown", handleEscape);
 
-    const normalizedQuery =
-      normalizeText(query);
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [searchActive]);
+
+  // LOCK BACKGROUND SCROLL WHEN SEARCH IS OPEN
+  useEffect(() => {
+    document.body.style.overflow = searchActive ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [searchActive]);
+
+  // NORMALIZE SEARCH TEXT
+  const normalizeText = (value: string) => {
+    return value
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  // SEARCH SUGGESTIONS
+  const searchSuggestions = useMemo(() => {
+    const query = normalizeText(searchQuery);
+
+    if (!query) {
+      return notesCatalog.slice(0, 10);
+    }
+
+    const queryWords = query.split(" ");
 
     return notesCatalog
-
       .map((item) => {
+        const name = normalizeText(item.name);
 
-        const name =
-          normalizeText(
-            item.name
-          );
+        const aliases = (item.aliases ?? []).map(normalizeText);
 
-        const aliases =
-          (
-            item.aliases ??
-            []
-          ).map(
-            normalizeText
-          );
+        const semester = normalizeText(item.semester);
 
         let score = 0;
 
-        if (
-          name === normalizedQuery
-        ) {
-
-          score = 100;
-
-        }
-
+        if (name === query) score = 100;
+        else if (aliases.includes(query)) score = 95;
+        else if (name.startsWith(query)) score = 90;
+        else if (aliases.some((alias) => alias.startsWith(query)) ) score = 85;
         else if (
-          aliases.includes(
-            normalizedQuery
+          queryWords.some((queryWord) =>
+            name.split(" ").some((word) => word.startsWith(queryWord))
           )
         ) {
+          score = 80;
+        } else if (name.includes(query)) score = 70;
+        else if (aliases.some((alias) => alias.includes(query))) score = 65;
+        else if (semester.includes(query)) score = 40;
 
-          score = 95;
-
-        }
-
-        else if (
-          name.startsWith(
-            normalizedQuery
-          )
-        ) {
-
-          score = 90;
-
-        }
-
-        else if (
-          aliases.some(
-            (alias) =>
-              alias.startsWith(
-                normalizedQuery
-              )
-          )
-        ) {
-
-          score = 85;
-
-        }
-
-        else if (
-          name.includes(
-            normalizedQuery
-          )
-        ) {
-
-          score = 70;
-
-        }
-
-        else if (
-          aliases.some(
-            (alias) =>
-              alias.includes(
-                normalizedQuery
-              )
-          )
-        ) {
-
-          score = 65;
-
-        }
-
-        return {
-          item,
-          score,
-        };
-
+        return { ...item, score };
       })
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+  }, [searchQuery]);
 
-      .filter(
-        (result) =>
-          result.score > 0
-      )
+  // FIND BEST MATCH
+  const findBestMatch = (query: string) => {
+    const normalizedQuery = normalizeText(query);
 
-      .sort(
-        (a, b) =>
-          b.score - a.score
-      )[0];
+    return notesCatalog
+      .map((item) => {
+        const name = normalizeText(item.name);
+        const aliases = (item.aliases ?? []).map(normalizeText);
 
+        let score = 0;
+
+        if (name === normalizedQuery) score = 100;
+        else if (aliases.includes(normalizedQuery)) score = 95;
+        else if (name.startsWith(normalizedQuery)) score = 90;
+        else if (aliases.some((alias) => alias.startsWith(normalizedQuery))) {
+          score = 85;
+        } else if (name.includes(normalizedQuery)) score = 70;
+        else if (aliases.some((alias) => alias.includes(normalizedQuery))) {
+          score = 65;
+        }
+
+        return { item, score };
+      })
+      .filter((result) => result.score > 0)
+      .sort((a, b) => b.score - a.score)[0];
   };
 
-  /* =====================================================
-     HANDLE SEARCH
-  ===================================================== */
-
-  const handleSearch = (
-    value?: string
-  ) => {
-
-    const query =
-      (
-        value ??
-        searchQuery
-      ).trim();
+  // HANDLE SEARCH
+  const handleSearch = (value?: string) => {
+    const query = (value ?? searchQuery).trim();
 
     if (!query) {
-
-      openSearch();
-
+      setSearchActive(true);
+      setShowSuggestions(true);
       return;
-
     }
 
-    const bestMatch =
-      findBestMatch(
-        query
-      );
+    const bestMatch = findBestMatch(query);
 
     setSearchActive(false);
-
     setShowSuggestions(false);
 
-    /*
-     * Dedicated subject page
-     */
-    if (
-      bestMatch &&
-      bestMatch.item.route
-    ) {
-
-      window.location.assign(
-        bestMatch.item.route
-      );
-
+    if (bestMatch?.item.route) {
+      window.location.assign(bestMatch.item.route);
       return;
-
     }
 
-    /*
-     * Subject without dedicated
-     * page OR unknown query.
-     */
     window.location.assign(
-      `/notes?search=${encodeURIComponent(
-        query
-      )}`
+      `/notes?search=${encodeURIComponent(query)}`
     );
-
   };
 
-  /* =====================================================
-     SUGGESTION CLICK
-  ===================================================== */
-
-  const handleSuggestionClick = (
-    name: string
-  ) => {
-
-    const item =
-      notesCatalog.find(
-        (subject) =>
-          subject.name === name
-      );
+  // HANDLE SUGGESTION CLICK
+  const handleSuggestionClick = (name: string) => {
+    const item = notesCatalog.find(
+      (subject) => subject.name === name
+    );
 
     if (!item) {
-
       handleSearch(name);
-
       return;
-
     }
 
     setSearchQuery("");
-
     setSearchActive(false);
-
     setShowSuggestions(false);
 
-    /*
-     * Dedicated subject page
-     */
     if (item.route) {
-
-      window.location.assign(
-        item.route
-      );
-
+      window.location.assign(item.route);
       return;
-
     }
 
-    /*
-     * No dedicated page yet
-     */
     window.location.assign(
-      `/notes?search=${encodeURIComponent(
-        item.name
-      )}`
+      `/notes?search=${encodeURIComponent(item.name)}`
     );
-
   };
 
-  /* =====================================================
-     WAIT FOR INTRO CHECK
-  ===================================================== */
+  // OPEN SEARCH
+  const openSearch = () => {
+    setSearchActive(true);
+    setShowSuggestions(true);
+  };
+
+  // NAVIGATION
+  const goToNotes = () => {
+    setSearchActive(false);
+    setShowSuggestions(false);
+    setSearchQuery("");
+    window.location.assign("/notes");
+  };
 
   if (!introChecked) {
-
-    return (
-      <main className="min-h-screen bg-black" />
-    );
-
+    return <main className="min-h-screen bg-[#070B16]" />;
   }
 
   return (
     <>
-      {/* =================================================
-          INTRO / TRANSITION
-      ================================================== */}
-
+      {/* INTRO ANIMATION */}
       <AnimatePresence>
-
         {phase < 4 && (
-
           <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
-            exit={{
-              opacity: 0,
-            }}
-            transition={{
-              duration: 0.8,
-            }}
+            className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-[#070B16]"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
           >
-
-            {/* GLOW */}
-
-            <div className="absolute h-[700px] w-[700px] rounded-full bg-white/10 blur-3xl" />
-
-            {/* =========================================
-                PHASE 1
-            ========================================== */}
+            <div className="absolute h-[600px] w-[600px] rounded-full bg-[#2563EB]/15 blur-[130px]" />
 
             {phase === 1 && (
-
-              <div className="flex gap-8 px-6 md:gap-24">
-
-                {/* ELEVATE */}
-
+              <div className="relative flex gap-8 px-6 md:gap-24">
                 <motion.h1
-                  initial={{
-                    x: -400,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    x: 0,
-                    opacity: 1,
-                  }}
-                  transition={{
-                    duration: 2.5,
-                    ease: "easeInOut",
-                  }}
+                  initial={{ x: -400, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 2.5, ease: "easeInOut" }}
                   className="text-4xl font-extrabold text-white md:text-6xl"
                 >
                   ELEVATE
                 </motion.h1>
 
-                {/* ORBIT */}
-
                 <motion.h1
-                  initial={{
-                    x: 400,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    x: 0,
-                    opacity: 1,
-                  }}
-                  transition={{
-                    duration: 2.5,
-                    ease: "easeInOut",
-                  }}
-                  className="text-4xl font-extrabold text-white md:text-6xl"
+                  initial={{ x: 400, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 2.5, ease: "easeInOut" }}
+                  className="text-4xl font-extrabold text-[#38DDF2] md:text-6xl"
                 >
                   ORBIT
                 </motion.h1>
-
               </div>
-
             )}
 
-            {/* =========================================
-                PHASE 2
-            ========================================== */}
-
             {phase === 2 && (
-
               <motion.h1
-                initial={{
-                  scale: 0.8,
-                  opacity: 0,
-                }}
-                animate={{
-                  scale: [
-                    0.95,
-                    1.02,
-                    1,
-                  ],
-                  opacity: 1,
-                }}
-                transition={{
-                  duration: 1.5,
-                  ease: "easeInOut",
-                }}
-                className="bg-gradient-to-r from-white via-gray-300 to-gray-600 bg-clip-text text-6xl font-extrabold text-transparent md:text-8xl"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: [0.95, 1.02, 1], opacity: 1 }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
+                className="relative bg-gradient-to-r from-white via-[#38DDF2] to-[#9B7BFF] bg-clip-text text-6xl font-extrabold text-transparent md:text-8xl"
               >
                 ELEVIT
               </motion.h1>
-
             )}
 
-            {/* =========================================
-                PHASE 3
-            ========================================== */}
-
             {phase === 3 && (
-
               <motion.h1
                 animate={{
                   scale: 0.18,
@@ -876,598 +310,423 @@ export default function Home() {
                   y: -235,
                   opacity: 0.9,
                 }}
-                transition={{
-                  duration: 2,
-                  ease: "easeInOut",
-                }}
-                className="bg-gradient-to-r from-white via-gray-300 to-gray-600 bg-clip-text text-6xl font-extrabold text-transparent md:text-8xl"
+                transition={{ duration: 2, ease: "easeInOut" }}
+                className="relative bg-gradient-to-r from-white via-[#38DDF2] to-[#9B7BFF] bg-clip-text text-6xl font-extrabold text-transparent md:text-8xl"
               >
                 ELEVIT
               </motion.h1>
-
             )}
-
           </motion.div>
-
         )}
-
       </AnimatePresence>
 
-      {/* =================================================
-          SEARCH BACKDROP
-      ================================================== */}
-
+      {/* SEARCH BACKDROP */}
       <AnimatePresence>
-
         {searchActive && (
-
           <motion.div
-            initial={{
-              opacity: 0,
-            }}
-            animate={{
-              opacity: 1,
-            }}
-            exit={{
-              opacity: 0,
-            }}
-            transition={{
-              duration: 0.25,
-            }}
-            onClick={
-              closeSearch
-            }
-            className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={closeSearch}
+            className="fixed inset-0 z-[60] bg-[#030712]/75 backdrop-blur-lg"
             aria-hidden="true"
           />
-
         )}
-
       </AnimatePresence>
 
-      {/* =================================================
-          MAIN WEBSITE
-      ================================================== */}
-
+      {/* MAIN WEBSITE */}
       <main
-        className={`min-h-screen overflow-hidden bg-black text-white transition-opacity duration-1000 ${
-          phase < 4
-            ? "opacity-0"
-            : "opacity-100"
+        className={`min-h-screen overflow-hidden bg-[#070B16] text-[#F8FAFC] transition-opacity duration-1000 ${
+          phase < 4 ? "opacity-0" : "opacity-100"
         }`}
       >
-
         <Navbar />
 
-        {/* =================================================
-            HERO
-        ================================================== */}
+        {/* HERO */}
+        <section className="relative flex min-h-[90vh] flex-col items-center justify-center overflow-hidden px-5 pb-20 pt-32 text-center sm:px-6 sm:pt-36">
 
-        <section className="relative flex min-h-[90vh] flex-col items-center justify-center overflow-hidden px-5 pt-28 text-center sm:px-6 sm:pt-32">
+          {/* BACKGROUND GLOWS */}
+          <div className="pointer-events-none absolute left-1/2 top-[42%] h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2563EB]/15 blur-[130px] sm:h-[650px] sm:w-[650px]" />
 
-          {/* GLOW */}
+          <div className="pointer-events-none absolute left-[10%] top-[25%] h-48 w-48 rounded-full bg-[#38DDF2]/[0.07] blur-[100px]" />
 
-          <div className="pointer-events-none absolute h-[500px] w-[500px] rounded-full bg-white/10 blur-3xl sm:h-[600px] sm:w-[600px]" />
+          <div className="pointer-events-none absolute bottom-[10%] right-[10%] h-56 w-56 rounded-full bg-[#9B7BFF]/[0.08] blur-[110px]" />
 
-          {/* TITLE */}
+          {/* EYEBROW */}
+          <div className="relative mb-8 inline-flex items-center gap-2 rounded-full border border-[#38DDF2]/20 bg-[#38DDF2]/[0.06] px-5 py-2.5 text-[11px] font-medium tracking-[0.22em] text-[#38DDF2] sm:text-xs">
+            <Sparkles size={14} />
+            YOUR WORLD OF LEARNING
+          </div>
 
-          <h1 className="relative mb-5 bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-5xl font-extrabold leading-tight text-transparent sm:text-6xl md:text-8xl">
+          {/* MAIN TITLE */}
+          <h1 className="relative mb-6 bg-gradient-to-r from-[#F8FAFC] via-[#C8D8ED] to-[#38DDF2] bg-clip-text text-5xl font-extrabold leading-tight tracking-tight text-transparent sm:text-6xl md:text-8xl">
             ELEVATE ORBIT
           </h1>
 
           {/* DESCRIPTION */}
-
-          <p className="relative mb-9 max-w-4xl px-2 text-base leading-7 text-gray-300 sm:text-lg md:text-xl md:leading-9">
-            Where Notes, Projects, Research,
-            Innovation, Careers, AI Tools and
-            Technology Orbit Around Students.
+          <p className="relative mb-9 max-w-4xl px-2 text-base leading-8 text-[#B4C5DC] sm:text-lg md:text-xl md:leading-9">
+            Where Notes, Projects, Research, Innovation, Careers, AI Tools
+            and Technology Orbit Around Students.
           </p>
 
           {/* HERO BUTTONS */}
-
-          <div className="relative z-[10] flex w-full flex-wrap justify-center gap-4 sm:gap-6">
-
-            {/* EXPLORE NOTES */}
-
+          <div className="relative z-10 flex w-full flex-wrap justify-center gap-4 sm:gap-6">
             <button
               type="button"
-              onClick={
-                goToNotes
-              }
-              className="cursor-pointer rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-black shadow-2xl shadow-white/20 transition duration-300 hover:scale-105 hover:bg-gray-200 sm:px-8 sm:py-4 sm:text-base"
+              onClick={goToNotes}
+              className="cursor-pointer rounded-full bg-gradient-to-r from-[#38DDF2] to-[#4D9BF5] px-6 py-3.5 text-sm font-semibold text-[#070B16] shadow-lg shadow-[#38DDF2]/10 transition duration-300 hover:scale-105 hover:brightness-110 sm:px-8 sm:py-4 sm:text-base"
             >
               Explore Notes
             </button>
 
-            {/* EXPLORE INSIGHTS */}
-
-            <button
-              type="button"
-              onClick={() => {
-
-                window.location.assign(
-                  "/blog"
-                );
-
-              }}
-              className="cursor-pointer rounded-full border border-gray-600 px-6 py-3.5 text-sm transition duration-300 hover:scale-105 hover:bg-zinc-900 sm:px-8 sm:py-4 sm:text-base"
+            <Link
+              href="/blog"
+              className="rounded-full border border-white/20 px-6 py-3.5 text-sm font-medium text-[#E2EAF5] transition duration-300 hover:scale-105 hover:border-[#9B7BFF] hover:bg-[#9B7BFF]/10 sm:px-8 sm:py-4 sm:text-base"
             >
               Explore Insights
-            </button>
-
+            </Link>
           </div>
 
-          {/* =================================================
-              SEARCH
-          ================================================== */}
-
+          {/* SEARCH */}
           <motion.div
             animate={{
-              y: searchActive
-                ? -300
-                : 0,
-
-              scale: searchActive
-                ? 1.03
-                : 1,
+              y: searchActive ? -250 : 0,
+              scale: searchActive ? 1.02 : 1,
             }}
             transition={{
               duration: 0.45,
-              ease: [
-                0.22,
-                1,
-                0.36,
-                1,
-              ],
+              ease: [0.22, 1, 0.36, 1],
             }}
-            className={`relative mt-8 w-full max-w-2xl ${
-              searchActive
-                ? "z-[70]"
-                : "z-10"
+            className={`relative mt-10 w-full max-w-2xl ${
+              searchActive ? "z-[70]" : "z-10"
             }`}
           >
-
-            {/* SEARCH BOX */}
-
+            {/* SEARCH INPUT */}
             <div
-              className={`relative flex items-center rounded-2xl border bg-zinc-950/95 p-2 shadow-2xl backdrop-blur-xl transition duration-300 sm:rounded-full ${
+              className={`relative flex items-center rounded-2xl border bg-[#101725]/95 p-2 shadow-2xl shadow-black/30 backdrop-blur-xl transition duration-300 sm:rounded-full ${
                 searchActive
-                  ? "border-zinc-400 shadow-white/10"
-                  : "border-zinc-700"
+                  ? "border-[#38DDF2]/60 shadow-[#38DDF2]/10"
+                  : "border-white/15"
               }`}
             >
-
-              {/* SEARCH ICON */}
-
               <Search
                 size={20}
-                className="ml-3 shrink-0 text-zinc-500 sm:ml-4"
+                className="ml-3 shrink-0 text-[#94A9C5] sm:ml-4"
               />
-
-              {/* INPUT */}
 
               <input
                 type="text"
-                value={
-                  searchQuery
-                }
-                onFocus={
-                  openSearch
-                }
-                onChange={(
-                  event
-                ) => {
-
-                  setSearchQuery(
-                    event.target.value
-                  );
-
-                  setSearchActive(
-                    true
-                  );
-
-                  setShowSuggestions(
-                    true
-                  );
-
+                value={searchQuery}
+                onFocus={openSearch}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  setSearchActive(true);
+                  setShowSuggestions(true);
                 }}
-                onKeyDown={(
-                  event
-                ) => {
-
-                  if (
-                    event.key ===
-                    "Enter"
-                  ) {
-
-                    handleSearch();
-
-                  }
-
-                  if (
-                    event.key ===
-                    "Escape"
-                  ) {
-
-                    closeSearch();
-
-                  }
-
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") handleSearch();
+                  if (event.key === "Escape") closeSearch();
                 }}
                 placeholder="Search subjects, notes, units..."
-                aria-label="Search Elevate Orbit"
-                className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-zinc-600 sm:px-4 sm:text-base"
+                aria-label="Search ELEVIT"
+                className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-white outline-none placeholder:text-[#71829C] sm:px-4 sm:text-base"
               />
 
-              {/* CLOSE */}
-
               {searchActive && (
-
                 <button
                   type="button"
-                  onClick={
-                    closeSearch
-                  }
+                  onClick={closeSearch}
                   aria-label="Close search"
-                  className="mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-zinc-400 transition duration-200 hover:bg-zinc-900 hover:text-white"
+                  className="mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#94A9C5] transition hover:bg-white/10 hover:text-white"
                 >
                   ✕
                 </button>
-
               )}
-
-              {/* SEARCH BUTTON */}
 
               <button
                 type="button"
-                onClick={() =>
-                  handleSearch()
-                }
-                className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black transition duration-300 hover:bg-zinc-200 sm:rounded-full sm:px-6"
+                onClick={() => handleSearch()}
+                className="rounded-xl bg-gradient-to-r from-[#38DDF2] to-[#4D9BF5] px-4 py-3 text-sm font-semibold text-[#070B16] transition duration-300 hover:brightness-110 sm:rounded-full sm:px-6"
               >
-
-                <span className="hidden sm:inline">
-                  Search
-                </span>
-
-                <ArrowRight
-                  size={18}
-                  className="sm:hidden"
-                />
-
+                <span className="hidden sm:inline">Search</span>
+                <ArrowRight size={18} className="sm:hidden" />
               </button>
-
             </div>
 
-            {/* =================================================
-                SUGGESTIONS
-            ================================================== */}
-
+            {/* SUGGESTIONS */}
             <AnimatePresence>
+              {searchActive && showSuggestions && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute left-0 right-0 top-full z-[80] mt-3 max-h-[460px] overflow-y-auto rounded-2xl border border-white/10 bg-[#101725]/[0.98] text-left shadow-2xl shadow-black/70 backdrop-blur-xl"
+                >
+                  <div className="border-b border-white/[0.07] px-5 py-3.5">
+                    <p className="text-xs uppercase tracking-[0.22em] text-[#71829C]">
+                      {searchQuery.trim()
+                        ? "Matching content"
+                        : "Explore subjects"}
+                    </p>
+                  </div>
 
-              {searchActive &&
-                showSuggestions && (
-
-                  <motion.div
-                    initial={{
-                      opacity: 0,
-                      y: -10,
-                      scale: 0.98,
-                    }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      scale: 1,
-                    }}
-                    exit={{
-                      opacity: 0,
-                      y: -10,
-                      scale: 0.98,
-                    }}
-                    transition={{
-                      duration: 0.2,
-                    }}
-                    className="absolute left-0 right-0 top-full z-[80] mt-3 max-h-[460px] overflow-y-auto rounded-2xl border border-zinc-800 bg-zinc-950/98 text-left shadow-2xl shadow-black/70 backdrop-blur-xl"
-                  >
-
-                    {/* HEADER */}
-
-                    <div className="border-b border-zinc-800 px-5 py-3.5">
-
-                      <p className="text-xs uppercase tracking-[0.22em] text-zinc-600">
-
-                        {searchQuery.trim()
-                          ? "Matching content"
-                          : "Explore subjects"}
-
-                      </p>
-
-                    </div>
-
-                    {/* RESULTS */}
-
-                    {searchSuggestions.length >
-                    0 ? (
-
-                      searchSuggestions.map(
-                        (item) => (
-
-                          <button
-                            key={`${item.semester}-${item.name}`}
-                            type="button"
-                            onMouseDown={(
-                              event
-                            ) => {
-
-                              event.preventDefault();
-
-                            }}
-                            onClick={() =>
-                              handleSuggestionClick(
-                                item.name
-                              )
-                            }
-                            className="group flex w-full items-center justify-between gap-4 border-b border-zinc-900 px-5 py-4 text-left transition duration-200 hover:bg-zinc-900"
-                          >
-
-                            <div className="min-w-0">
-
-                              <p className="truncate text-sm font-medium text-zinc-200 transition group-hover:text-white">
-                                {item.name}
-                              </p>
-
-                              <p className="mt-1 text-xs text-zinc-600">
-                                {item.semester}
-
-                                {item.route
-                                  ? ""
-                                  : " • Notes Coming Soon"}
-                              </p>
-
-                            </div>
-
-                            <ArrowRight
-                              size={17}
-                              className="shrink-0 text-zinc-700 transition group-hover:translate-x-1 group-hover:text-zinc-300"
-                            />
-
-                          </button>
-
-                        )
-                      )
-
-                    ) : (
-
-                      <div className="px-5 py-7">
-
-                        <div className="flex items-center gap-3">
-
-                          <Search
-                            size={18}
-                            className="text-zinc-700"
-                          />
-
-                          <p className="text-sm text-zinc-400">
-                            No matching content found.
+                  {searchSuggestions.length > 0 ? (
+                    searchSuggestions.map((item) => (
+                      <button
+                        key={`${item.semester}-${item.name}`}
+                        type="button"
+                        onClick={() =>
+                          handleSuggestionClick(item.name)
+                        }
+                        className="group flex w-full items-center justify-between gap-4 border-b border-white/[0.04] px-5 py-4 text-left transition duration-200 hover:bg-[#141F32]"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-[#E2EAF5] transition group-hover:text-[#38DDF2]">
+                            {item.name}
                           </p>
 
+                          <p className="mt-1 text-xs text-[#71829C]">
+                            {item.semester}
+                            {item.route ? "" : " • Notes Coming Soon"}
+                          </p>
                         </div>
 
-                        <p className="mt-2 pl-7 text-xs text-zinc-700">
-                          Try a subject name,
-                          keyword, abbreviation
-                          or semester.
+                        <ArrowRight
+                          size={17}
+                          className="shrink-0 text-[#71829C] transition group-hover:translate-x-1 group-hover:text-[#38DDF2]"
+                        />
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-5 py-7">
+                      <div className="flex items-center gap-3">
+                        <Search size={18} className="text-[#71829C]" />
+                        <p className="text-sm text-[#B4C5DC]">
+                          No matching content found.
                         </p>
-
                       </div>
 
-                    )}
-
-                    {/* FOOTER */}
-
-                    <div className="border-t border-zinc-800 px-5 py-2.5">
-
-                      <p className="text-right text-[11px] text-zinc-600">
-                        Press Esc or ✕ to close
+                      <p className="mt-2 pl-7 text-xs text-[#71829C]">
+                        Try a subject name, keyword, abbreviation or
+                        semester.
                       </p>
-
                     </div>
+                  )}
 
-                  </motion.div>
-
-                )}
-
+                  <div className="border-t border-white/[0.07] px-5 py-2.5">
+                    <p className="text-right text-[11px] text-[#71829C]">
+                      Press Esc or ✕ to close
+                    </p>
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
 
-            {/* HELPER */}
-
             {!searchActive && (
-
-              <p className="mt-3 text-xs tracking-wide text-zinc-600">
+              <p className="mt-3 text-xs tracking-wide text-[#71829C]">
                 Search subjects, units, notes and study resources
               </p>
-
             )}
-
           </motion.div>
 
+          {/* LEARN BUILD GROW IDENTITY */}
+          <div className="relative mt-20">
+            <p className="text-xs font-medium tracking-[0.3em] text-[#94A9C5] sm:text-sm">
+              ONE PLATFORM. ENDLESS POSSIBILITIES.
+            </p>
+
+            <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+              Learn.
+              <span className="text-[#38DDF2]"> Build.</span>
+              <span className="bg-gradient-to-r from-[#4D9BF5] to-[#9B7BFF] bg-clip-text text-transparent">
+                {" "}Grow.
+              </span>
+            </h2>
+          </div>
         </section>
 
-        {/* =================================================
-            ECOSYSTEM
-        ================================================== */}
-
-        <section className="bg-black px-5 pb-28 sm:px-6 sm:pb-32">
+        {/* ECOSYSTEM */}
+        <section className="relative bg-[#0A1020] px-5 pb-24 pt-20 sm:px-6 sm:pb-28 sm:pt-24">
+          <div className="pointer-events-none absolute left-1/2 top-0 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#38DDF2]/30 to-transparent" />
 
           <div className="mx-auto max-w-7xl">
 
-            {/* HEADING */}
+            {/* SECTION HEADING */}
+            <div className="mb-14 text-center sm:mb-16">
+              <p className="mb-4 text-xs font-semibold tracking-[0.28em] text-[#38DDF2]">
+                EXPLORE WHAT'S POSSIBLE
+              </p>
 
-            <div className="mb-14 text-center sm:mb-20">
-
-              <h2 className="mb-5 text-4xl font-bold sm:text-5xl md:text-6xl">
+              <h2 className="mb-5 text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl md:text-5xl">
                 The ELEVIT Ecosystem
               </h2>
 
-              <p className="mx-auto max-w-4xl text-base leading-7 text-gray-400 sm:text-lg sm:leading-8">
-                A complete student-centered ecosystem
-                where learning, innovation, research,
-                projects, career development, and
-                technology resources come together.
+              <p className="mx-auto max-w-3xl text-sm leading-7 text-[#94A9C5] sm:text-base sm:leading-8">
+                A student-centered space bringing learning, innovation,
+                research, projects and career development together.
               </p>
-
             </div>
 
-            {/* CARDS */}
-
-            <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {/* ECOSYSTEM CARDS */}
+            <div className="grid gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
 
               {/* NOTES */}
-
               <button
                 type="button"
-                onClick={
-                  goToNotes
-                }
-                className="group cursor-pointer rounded-3xl border border-zinc-800 bg-zinc-950 p-7 text-left transition duration-300 hover:-translate-y-3 hover:border-white hover:shadow-2xl hover:shadow-white/10 sm:p-8"
+                onClick={goToNotes}
+                className="group rounded-3xl border border-white/[0.08] bg-[#101725] p-7 text-left transition duration-300 hover:-translate-y-2 hover:border-[#38DDF2]/50 hover:shadow-xl hover:shadow-[#38DDF2]/[0.06] sm:p-8"
               >
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#38DDF2]/15 bg-[#38DDF2]/[0.08]">
+                  <BookOpen size={28} className="text-[#38DDF2]" />
+                </div>
 
-                <BookOpen
-                  size={40}
-                  className="mb-4 text-white transition duration-300 group-hover:scale-110"
-                />
-
-                <h3 className="mb-3 text-2xl font-bold sm:text-3xl">
+                <h3 className="mb-3 text-2xl font-bold text-[#F8FAFC]">
                   ELEVIT Notes
                 </h3>
 
-                <p className="text-base leading-7 text-gray-400 sm:text-lg sm:leading-8">
-                  Semester-wise engineering notes,
-                  handwritten resources and exam
-                  preparation.
+                <p className="text-sm leading-7 text-[#94A9C5] sm:text-base">
+                  Semester-wise engineering notes, handwritten resources
+                  and exam preparation materials.
                 </p>
 
+                <div className="mt-6 flex items-center gap-2 text-sm font-medium text-[#38DDF2]">
+                  Explore Notes <ArrowRight size={16} />
+                </div>
               </button>
 
               {/* INSIGHTS */}
-
-              <button
-                type="button"
-                onClick={() => {
-
-                  window.location.assign(
-                    "/blog"
-                  );
-
-                }}
-                className="group cursor-pointer rounded-3xl border border-zinc-800 bg-zinc-950 p-7 text-left transition duration-300 hover:-translate-y-3 hover:border-white hover:shadow-2xl hover:shadow-white/10 sm:p-8"
+              <Link
+                href="/blog"
+                className="group rounded-3xl border border-white/[0.08] bg-[#101725] p-7 transition duration-300 hover:-translate-y-2 hover:border-[#9B7BFF]/50 hover:shadow-xl hover:shadow-[#9B7BFF]/[0.06] sm:p-8"
               >
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#9B7BFF]/15 bg-[#9B7BFF]/[0.08]">
+                  <Newspaper size={28} className="text-[#9B7BFF]" />
+                </div>
 
-                <Newspaper
-                  size={40}
-                  className="mb-4 text-white transition duration-300 group-hover:scale-110"
-                />
-
-                <h3 className="mb-3 text-2xl font-bold sm:text-3xl">
+                <h3 className="mb-3 text-2xl font-bold text-[#F8FAFC]">
                   ELEVIT Insights
                 </h3>
 
-                <p className="text-base leading-7 text-gray-400 sm:text-lg sm:leading-8">
-                  Engineering blogs, research
-                  articles, technology trends and
-                  innovation insights.
+                <p className="text-sm leading-7 text-[#94A9C5] sm:text-base">
+                  Engineering blogs, research articles, technology trends
+                  and innovation insights.
                 </p>
 
-              </button>
+                <div className="mt-6 flex items-center gap-2 text-sm font-medium text-[#9B7BFF]">
+                  Explore Insights <ArrowRight size={16} />
+                </div>
+              </Link>
 
               {/* LABS */}
+              <Link
+                href="/projects"
+                className="group rounded-3xl border border-white/[0.08] bg-[#101725] p-7 transition duration-300 hover:-translate-y-2 hover:border-[#4D9BF5]/50 hover:shadow-xl hover:shadow-[#4D9BF5]/[0.06] sm:p-8"
+              >
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#4D9BF5]/15 bg-[#4D9BF5]/[0.08]">
+                  <Cpu size={28} className="text-[#4D9BF5]" />
+                </div>
 
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-7 transition duration-300 hover:-translate-y-3 hover:border-white hover:shadow-2xl hover:shadow-white/10 sm:p-8">
-
-                <Cpu
-                  size={40}
-                  className="mb-4 text-white"
-                />
-
-                <h3 className="mb-3 text-2xl font-bold sm:text-3xl">
+                <h3 className="mb-3 text-2xl font-bold text-[#F8FAFC]">
                   ELEVIT Labs
                 </h3>
 
-                <p className="text-base leading-7 text-gray-400 sm:text-lg sm:leading-8">
-                  IoT systems, embedded projects,
-                  FPGA research, AI hardware and
-                  innovation.
+                <p className="text-sm leading-7 text-[#94A9C5] sm:text-base">
+                  IoT systems, embedded projects, FPGA research, AI
+                  hardware and engineering innovation.
                 </p>
 
-              </div>
+                <div className="mt-6 flex items-center gap-2 text-sm font-medium text-[#4D9BF5]">
+                  Explore Projects <ArrowRight size={16} />
+                </div>
+              </Link>
 
               {/* MEDIA */}
+              <div className="group rounded-3xl border border-white/[0.08] bg-[#101725] p-7 transition duration-300 hover:-translate-y-2 hover:border-[#38DDF2]/40 sm:p-8">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#38DDF2]/15 bg-[#38DDF2]/[0.08]">
+                  <Video size={28} className="text-[#38DDF2]" />
+                </div>
 
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-7 transition duration-300 hover:-translate-y-3 hover:border-white hover:shadow-2xl hover:shadow-white/10 sm:p-8">
-
-                <Video
-                  size={40}
-                  className="mb-4 text-white"
-                />
-
-                <h3 className="mb-3 text-2xl font-bold sm:text-3xl">
+                <h3 className="mb-3 text-2xl font-bold text-[#F8FAFC]">
                   ELEVIT Media
                 </h3>
 
-                <p className="text-base leading-7 text-gray-400 sm:text-lg sm:leading-8">
-                  Video explanations, tutorials,
-                  visual learning and AI-powered
-                  education.
+                <p className="text-sm leading-7 text-[#94A9C5] sm:text-base">
+                  Video explanations, tutorials, visual learning and
+                  AI-powered education.
                 </p>
 
+                <span className="mt-6 inline-block text-xs font-semibold tracking-wider text-[#38DDF2]">
+                  IN DEVELOPMENT
+                </span>
               </div>
 
               {/* CAREERS */}
+              <div className="group rounded-3xl border border-white/[0.08] bg-[#101725] p-7 transition duration-300 hover:-translate-y-2 hover:border-[#9B7BFF]/40 sm:p-8">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#9B7BFF]/15 bg-[#9B7BFF]/[0.08]">
+                  <Briefcase size={28} className="text-[#9B7BFF]" />
+                </div>
 
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-7 transition duration-300 hover:-translate-y-3 hover:border-white hover:shadow-2xl hover:shadow-white/10 sm:p-8">
-
-                <Briefcase
-                  size={40}
-                  className="mb-4 text-white"
-                />
-
-                <h3 className="mb-3 text-2xl font-bold sm:text-3xl">
+                <h3 className="mb-3 text-2xl font-bold text-[#F8FAFC]">
                   ELEVIT Careers
                 </h3>
 
-                <p className="text-base leading-7 text-gray-400 sm:text-lg sm:leading-8">
-                  Placement preparation, interview
-                  guidance and career roadmaps.
+                <p className="text-sm leading-7 text-[#94A9C5] sm:text-base">
+                  Placement preparation, interview guidance and career
+                  roadmaps.
                 </p>
 
+                <span className="mt-6 inline-block text-xs font-semibold tracking-wider text-[#9B7BFF]">
+                  COMING SOON
+                </span>
               </div>
 
               {/* RESOURCES */}
+              <div className="group rounded-3xl border border-white/[0.08] bg-[#101725] p-7 transition duration-300 hover:-translate-y-2 hover:border-[#4D9BF5]/40 sm:p-8">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#4D9BF5]/15 bg-[#4D9BF5]/[0.08]">
+                  <FolderOpen size={28} className="text-[#4D9BF5]" />
+                </div>
 
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-7 transition duration-300 hover:-translate-y-3 hover:border-white hover:shadow-2xl hover:shadow-white/10 sm:p-8">
-
-                <FolderOpen
-                  size={40}
-                  className="mb-4 text-white"
-                />
-
-                <h3 className="mb-3 text-2xl font-bold sm:text-3xl">
+                <h3 className="mb-3 text-2xl font-bold text-[#F8FAFC]">
                   ELEVIT Resources
                 </h3>
 
-                <p className="text-base leading-7 text-gray-400 sm:text-lg sm:leading-8">
-                  PDFs, cheat sheets, study materials
-                  and productivity resources.
+                <p className="text-sm leading-7 text-[#94A9C5] sm:text-base">
+                  PDFs, cheat sheets, study materials and productivity
+                  resources.
                 </p>
 
+                <span className="mt-6 inline-block text-xs font-semibold tracking-wider text-[#4D9BF5]">
+                  EXPLORE THROUGH NOTES
+                </span>
               </div>
-
             </div>
-
           </div>
-
         </section>
 
+        {/* FOOTER */}
+        <footer className="border-t border-white/[0.07] bg-[#070B16] px-6 py-8">
+          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 text-sm text-[#71829C] sm:flex-row">
+            <p>
+              © {new Date().getFullYear()} ELEVIT. All rights reserved.
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-6">
+              <Link href="/notes" className="transition hover:text-[#38DDF2]">
+                Notes
+              </Link>
+
+              <Link href="/blog" className="transition hover:text-[#38DDF2]">
+                Insights
+              </Link>
+
+              <Link href="/admin/login" className="transition hover:text-[#38DDF2]">
+                Admin
+              </Link>
+            </div>
+          </div>
+        </footer>
       </main>
     </>
   );
