@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+
 import ContributeWidget from "./components/ContributeWidget";
 import "./globals.css";
 
@@ -32,10 +33,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
 
-        {/* Elevate Orbit contribution popup */}
         <ContributeWidget />
 
-        {/* Vercel Analytics */}
         <Analytics />
       </body>
     </html>
