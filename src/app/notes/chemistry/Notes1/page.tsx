@@ -1,160 +1,198 @@
 
-import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, BookOpen } from "lucide-react";
-
 import Navbar from "../../../components/Navbar";
+import NotesViewer from "./NotesViewer";
+
+const BASE_URL = "https://elevateorbit.in";
+const PAGE_URL = `${BASE_URL}/notes/chemistry/Notes1`;
+
+export const metadata: Metadata = {
+  title: "Chemistry Handwritten Notes – 45 Pages | ELEVIT",
+  description:
+    "Read 45 pages of Chemistry handwritten engineering notes on ELEVIT. Navigate pages, zoom into notes, save your reading progress and print or save the complete notes as PDF.",
+  alternates: {
+    canonical: PAGE_URL,
+  },
+  openGraph: {
+    title: "Chemistry Handwritten Notes | ELEVIT",
+    description:
+      "Access 45 pages of Chemistry handwritten study notes for engineering students, with an interactive online reader.",
+    url: PAGE_URL,
+    siteName: "ELEVIT",
+    type: "article",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+    },
+  },
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Chemistry Handwritten Notes - Set 1",
+  description:
+    "A collection of 45 pages of handwritten Chemistry study notes for engineering students.",
+  learningResourceType: "Handwritten study notes",
+  educationalLevel: "Higher Education",
+  inLanguage: "en",
+  isAccessibleForFree: true,
+  provider: {
+    "@type": "Organization",
+    name: "ELEVIT",
+    url: BASE_URL,
+  },
+  url: PAGE_URL,
+  numberOfPages: 45,
+};
 
 export default function ChemistryNotes1() {
-  const images = Array.from({ length: 45 }, (_, i) => i + 1);
-
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#070B16] text-[#F8FAFC]">
-
-      {/* BACKGROUND ATMOSPHERE */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(
+            /</g,
+            "\\u003c"
+          ),
+        }}
+      />
 
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-[-250px] h-[550px] w-[750px] -translate-x-1/2 rounded-full bg-[#4D9BF5]/[0.08] blur-[140px]" />
-
         <div className="absolute right-[-200px] top-[900px] h-[400px] w-[400px] rounded-full bg-[#9B7BFF]/[0.05] blur-[140px]" />
       </div>
 
       <Navbar />
 
-      {/* SUBJECT HEADER */}
-
-      <section className="relative px-6 pb-12 pt-36 sm:pt-40">
-        <div className="mx-auto max-w-5xl">
+      <section className="relative px-5 pb-8 pt-32 sm:px-8 sm:pt-36">
+        <div className="mx-auto max-w-6xl">
+          <nav
+            aria-label="Breadcrumb"
+            className="mb-9 flex flex-wrap items-center gap-2 text-xs text-[#8292AC]"
+          >
+            <Link href="/" className="transition hover:text-[#38DDF2]">
+              Home
+            </Link>
+            <span>/</span>
+            <Link href="/notes" className="transition hover:text-[#38DDF2]">
+              Notes
+            </Link>
+            <span>/</span>
+            <Link
+              href="/notes/chemistry"
+              className="transition hover:text-[#38DDF2]"
+            >
+              Chemistry
+            </Link>
+            <span>/</span>
+            <span className="text-[#BCEFFF]">Notes Set 1</span>
+          </nav>
 
           <Link
-            href="/notes"
-            className="mb-10 inline-flex items-center gap-2 text-sm text-[#94A9C5] transition hover:text-[#38DDF2]"
+            href="/notes/chemistry"
+            className="mb-8 inline-flex items-center gap-2 text-sm text-[#94A9C5] transition hover:text-[#38DDF2]"
           >
             <ArrowLeft size={17} />
-            Back to Notes
+            Back to Chemistry
           </Link>
 
-          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#38DDF2]/20 bg-[#38DDF2]/[0.07]">
-            <BookOpen size={27} className="text-[#38DDF2]" />
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#38DDF2]/20 bg-[#38DDF2]/[0.07]">
+              <BookOpen size={24} className="text-[#38DDF2]" />
+            </div>
+
+            <div>
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#38DDF2]">
+                ELEVIT ENGINEERING NOTES
+              </p>
+
+              <h1 className="text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl md:text-5xl">
+                Chemistry Handwritten Notes
+              </h1>
+            </div>
           </div>
 
-          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[#38DDF2]">
-            ENGINEERING RESOURCES
+          <p className="mt-6 max-w-3xl text-sm leading-7 text-[#94A9C5] sm:text-base">
+            Access the first set of Chemistry handwritten study
+            notes. Read all 45 pages using the ELEVIT document
+            reader, navigate between pages, zoom into the handwriting
+            and save your reading progress.
           </p>
 
-          <h1 className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl">
-            Chemistry
-          </h1>
-
-          <p className="mt-5 text-base leading-7 text-[#94A9C5] sm:text-lg">
-            Study materials and handwritten notes for Chemistry.
-          </p>
-
-          {/* NOTES SET INFO */}
-
-          <div className="mt-9 inline-flex items-center gap-3 rounded-xl border border-[#38DDF2]/15 bg-[#141D30]/80 px-5 py-3">
-            <span className="h-2 w-2 rounded-full bg-[#38DDF2]" />
-
-            <span className="text-sm font-medium text-[#BCEFFF]">
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <span className="rounded-xl border border-[#38DDF2]/20 bg-[#38DDF2]/[0.07] px-4 py-2 text-xs font-medium text-[#BCEFFF]">
               Notes Set 1
             </span>
-
-            <span className="text-xs text-[#718096]">
-              45 Pages
+            <span className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-xs text-[#94A9C5]">
+              45 handwritten pages
+            </span>
+            <span className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-xs text-[#94A9C5]">
+              Free study resource
             </span>
           </div>
 
-          <div className="mt-12 h-px bg-gradient-to-r from-[#38DDF2]/30 via-white/[0.08] to-transparent" />
-
+          <div className="mt-10 h-px bg-gradient-to-r from-[#38DDF2]/30 via-white/[0.08] to-transparent" />
         </div>
       </section>
 
-      {/* NOTES PAGES */}
+      <NotesViewer />
 
-      <section className="relative px-4 pb-28 sm:px-6">
-        <div className="mx-auto max-w-5xl">
+      <section className="relative px-5 pb-16 sm:px-8">
+        <div className="mx-auto max-w-6xl rounded-3xl border border-white/[0.07] bg-[#101827]/70 p-6 sm:p-8">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#38DDF2]">
+            ABOUT THIS RESOURCE
+          </p>
 
-          {/* SECTION HEADER */}
+          <h2 className="mt-3 text-xl font-bold text-white">
+            Chemistry – Notes Set 1
+          </h2>
 
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white">
-              Notes 1
-            </h2>
+          <p className="mt-4 max-w-4xl text-sm leading-7 text-[#94A9C5]">
+            This ELEVIT resource contains 45 pages of handwritten
+            Chemistry study material. Students can use the
+            page-by-page reader to review their notes, revisit
+            handwritten explanations and study at their preferred pace.
+          </p>
 
-            <p className="mt-2 text-sm text-[#718096]">
-              Scroll through the pages below.
-            </p>
-          </div>
-
-          {/* IMAGE PAGES */}
-
-          <div className="space-y-12">
-
-            {images.map((page) => (
-              <div
-                key={page}
-                className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111827]/70 p-3 shadow-[0_15px_50px_rgba(0,0,0,0.2)] sm:rounded-3xl sm:p-5"
-              >
-
-                <div className="mb-4 flex items-center justify-between px-1">
-                  <span className="text-sm font-medium text-[#BCEFFF]">
-                    Page {String(page).padStart(2, "0")}
-                  </span>
-
-                  <span className="text-xs text-[#718096]">
-                    {page} / 45
-                  </span>
-                </div>
-
-                <Image
-                  src={`/notes/chemistry/Notes1/${page}.jpg`}
-                  alt={`Chemistry Notes 1 - Page ${page}`}
-                  width={1200}
-                  height={1700}
-                  sizes="(max-width: 768px) 100vw, 900px"
-                  className="h-auto w-full rounded-xl border border-white/[0.06] bg-white object-contain"
-                  priority={page === 1}
-                />
-
-              </div>
-            ))}
-
-          </div>
-
-          {/* END OF NOTES */}
-
-          <div className="mt-16 border-t border-white/[0.08] pt-10 text-center">
-
-            <p className="text-sm text-[#8292AC]">
-              You've reached the end of Notes Set 1.
-            </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/notes/chemistry"
+              className="inline-flex items-center gap-2 rounded-xl border border-[#38DDF2]/20 bg-[#38DDF2]/[0.06] px-4 py-3 text-sm font-medium text-[#38DDF2] transition hover:bg-[#38DDF2]/[0.12]"
+            >
+              <ArrowLeft size={16} />
+              More Chemistry Notes
+            </Link>
 
             <Link
               href="/notes"
-              className="mt-6 inline-flex items-center gap-2 rounded-xl border border-[#38DDF2]/20 bg-[#38DDF2]/[0.06] px-5 py-3 text-sm font-medium text-[#38DDF2] transition duration-300 hover:bg-[#38DDF2]/[0.12]"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] px-4 py-3 text-sm text-[#94A9C5] transition hover:border-white/20 hover:text-white"
             >
-              <ArrowLeft size={16} />
-              Back to All Subjects
+              Explore All Subjects
             </Link>
-
           </div>
-
         </div>
       </section>
-
-      {/* FOOTER */}
 
       <footer className="relative border-t border-white/[0.06] px-6 py-9">
         <div className="mx-auto max-w-7xl text-center">
           <p className="text-sm text-[#718096]">
-            <span className="font-semibold text-[#38DDF2]">
-              ELEVIT
-            </span>
+            <span className="font-semibold text-[#38DDF2]">ELEVIT</span>
             {" "}· By Elevate Orbit
+          </p>
+          <p className="mt-2 text-xs text-[#526078]">
+            Learn. Build. Grow.
           </p>
         </div>
       </footer>
-
     </main>
   );
 }

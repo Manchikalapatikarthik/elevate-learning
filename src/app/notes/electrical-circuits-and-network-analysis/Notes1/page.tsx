@@ -1,28 +1,87 @@
 
-import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowUp, BookOpen, CircuitBoard } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  CircuitBoard,
+  FileText,
+} from "lucide-react";
+
 import Navbar from "../../../components/Navbar";
+import NotesViewer from "./NotesViewer";
+
+const title =
+  "Electrical Circuits and Network Analysis – Notes Set 1 | ELEVIT";
+
+const description =
+  "Access 45 pages of handwritten Electrical Circuits and Network Analysis notes. Read, zoom, navigate, save your progress, and print your notes on ELEVIT.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: {
+    canonical:
+      "https://elevateorbit.in/notes/electrical-circuits-and-network-analysis/Notes1",
+  },
+  openGraph: {
+    title,
+    description,
+    url: "https://elevateorbit.in/notes/electrical-circuits-and-network-analysis/Notes1",
+    siteName: "ELEVIT",
+    type: "article",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Electrical Circuits and Network Analysis – Notes Set 1",
+  description,
+  educationalLevel: "Undergraduate",
+  learningResourceType: "Handwritten Engineering Notes",
+  inLanguage: "en",
+  provider: {
+    "@type": "Organization",
+    name: "ELEVIT",
+    url: "https://elevateorbit.in",
+  },
+};
 
 export default function ElectricalCircuitsAndNetworkAnalysisNotes1() {
-  const images = Array.from({ length: 45 }, (_, i) => i + 1);
-
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#070B16] text-[#F8FAFC]">
+    <main
+      id="top"
+      className="relative min-h-screen overflow-hidden bg-[#070B16] text-[#F8FAFC]"
+    >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+        }}
+      />
+
       {/* BACKGROUND ATMOSPHERE */}
+
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-[-220px] h-[520px] w-[720px] -translate-x-1/2 rounded-full bg-[#4D9BF5]/[0.08] blur-[140px]" />
+
         <div className="absolute right-[-180px] top-[900px] h-[400px] w-[400px] rounded-full bg-[#9B7BFF]/[0.05] blur-[140px]" />
       </div>
 
       <Navbar />
 
       {/* SUBJECT HEADER */}
-      <section className="relative px-6 pb-14 pt-40 sm:pt-44">
-        <div className="mx-auto max-w-5xl">
+
+      <section className="relative px-4 pb-12 pt-32 sm:px-6 sm:pt-40">
+        <div className="mx-auto max-w-6xl">
           <Link
             href="/notes"
-            className="mb-10 inline-flex items-center gap-2 text-sm text-[#94A9C5] transition hover:text-[#38DDF2]"
+            className="mb-9 inline-flex items-center gap-2 text-sm text-[#94A9C5] transition hover:text-[#38DDF2]"
           >
             <ArrowLeft size={17} />
             Back to Notes
@@ -36,24 +95,26 @@ export default function ElectricalCircuitsAndNetworkAnalysisNotes1() {
             ENGINEERING RESOURCES
           </p>
 
-          <h1 className="max-w-4xl text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl">
+          <h1 className="max-w-5xl text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl">
             Electrical Circuits and Network Analysis
           </h1>
 
-          <p className="mt-5 max-w-3xl text-base leading-8 text-[#94A9C5] sm:text-lg">
+          <p className="mt-5 max-w-3xl text-sm leading-8 text-[#94A9C5] sm:text-lg">
             Explore your handwritten study material for Electrical
-            Circuits and Network Analysis, organized page by page
-            for focused learning and revision.
+            Circuits and Network Analysis. Navigate through all 45
+            pages with an interactive reader designed for focused
+            learning and revision.
           </p>
 
-          <div className="mt-9 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-sm text-[#CBD5E1]">
               <BookOpen size={16} className="text-[#38DDF2]" />
               Notes Set 1
             </div>
 
-            <div className="rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-sm text-[#CBD5E1]">
-              45 Pages
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-sm text-[#CBD5E1]">
+              <FileText size={16} className="text-[#9B7BFF]" />
+              45 Handwritten Pages
             </div>
           </div>
 
@@ -61,98 +122,63 @@ export default function ElectricalCircuitsAndNetworkAnalysisNotes1() {
         </div>
       </section>
 
-      {/* NOTES PAGES */}
-      <section className="relative px-4 pb-24 sm:px-6">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#38DDF2]">
-                STUDY MATERIAL
-              </p>
-              <h2 className="text-2xl font-bold text-white sm:text-3xl">
-                Notes Set 1
-              </h2>
-            </div>
+      {/* INTERACTIVE NOTES READER */}
 
-            <p className="text-sm text-[#8292AC]">
-              45 handwritten pages
+      <section className="relative px-3 pb-20 sm:px-6">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-7">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#38DDF2]">
+              STUDY MATERIAL
+            </p>
+
+            <h2 className="text-2xl font-bold text-white sm:text-3xl">
+              Notes Set 1
+            </h2>
+
+            <p className="mt-2 text-sm text-[#8292AC]">
+              45 pages · Interactive handwritten notes reader
             </p>
           </div>
 
-          <div className="space-y-8">
-            {images.map((page) => (
-              <article
-                key={page}
-                className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111827] p-3 shadow-[0_12px_40px_rgba(0,0,0,0.18)] sm:rounded-3xl sm:p-5"
-              >
-                <div className="mb-4 flex items-center justify-between px-1">
-                  <p className="text-sm font-semibold text-[#CBD5E1]">
-                    Page {String(page).padStart(2, "0")}
-                  </p>
-
-                  <span className="rounded-full border border-[#38DDF2]/15 bg-[#38DDF2]/[0.06] px-3 py-1 text-xs text-[#38DDF2]">
-                    Notes 1
-                  </span>
-                </div>
-
-                <div className="overflow-hidden rounded-xl bg-white sm:rounded-2xl">
-                  <Image
-                    src={`/notes/electrical-circuits-and-network-analysis/Notes1/${page}.jpg`}
-                    alt={`Electrical Circuits and Network Analysis notes - Page ${page}`}
-                    width={1200}
-                    height={1700}
-                    sizes="(max-width: 768px) 100vw, 900px"
-                    className="h-auto w-full"
-                    priority={page === 1}
-                  />
-                </div>
-              </article>
-            ))}
-          </div>
+          <NotesViewer />
 
           {/* END OF NOTES */}
-          <div className="mt-16 rounded-3xl border border-[#38DDF2]/15 bg-gradient-to-br from-[#141F32] to-[#111827] px-6 py-10 text-center sm:px-10">
+
+          <div className="mt-12 rounded-3xl border border-[#38DDF2]/15 bg-gradient-to-br from-[#141F32] to-[#111827] px-6 py-9 text-center sm:px-10">
             <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#38DDF2]/20 bg-[#38DDF2]/[0.08]">
               <BookOpen size={25} className="text-[#38DDF2]" />
             </div>
 
             <h3 className="text-2xl font-bold text-white">
-              You’ve reached the end!
+              Keep learning with ELEVIT
             </h3>
 
             <p className="mt-3 text-sm leading-7 text-[#94A9C5]">
-              You have viewed all 45 pages in this notes set.
-              Keep learning and revising with ELEVIT.
+              Complete your revision, revisit important pages, and
+              continue building your understanding of Electrical
+              Circuits and Network Analysis.
             </p>
 
             <Link
               href="/notes"
               className="mt-7 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#38DDF2] to-[#4D9BF5] px-6 py-3 text-sm font-semibold text-[#07111F] transition hover:brightness-110"
             >
-              Back to All Notes
               <ArrowLeft size={16} />
+              Back to All Notes
             </Link>
-          </div>
-
-          <div className="mt-8 text-center">
-            <a
-              href="#top"
-              className="inline-flex items-center gap-2 text-sm text-[#8292AC] transition hover:text-[#38DDF2]"
-            >
-              <ArrowUp size={16} />
-              Back to top
-            </a>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
+
       <footer className="relative border-t border-white/[0.06] px-6 py-9">
         <div className="mx-auto max-w-7xl text-center">
           <p className="text-sm text-[#718096]">
             <span className="font-semibold text-[#38DDF2]">ELEVIT</span>
             {" "}· By Elevate Orbit
           </p>
+
           <p className="mt-2 text-xs text-[#526078]">
             Learn. Build. Grow.
           </p>

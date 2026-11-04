@@ -1,23 +1,64 @@
-
-import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowUp,
-  BookOpen,
-  Cpu,
-} from "lucide-react";
-import Navbar from "../../../components/Navbar";
+import { ArrowLeft, ArrowUp, BookOpen, Cpu } from "lucide-react";
+import Navbar from  "../../../components/Navbar";
+import NotesViewer from "./NotesViewer";
+
+const BASE_URL = "https://elevateorbit.in";
+const PAGE_URL = `${BASE_URL}/notes/electronic-devices`;
+
+export const metadata: Metadata = {
+  title: "Electronic Devices Handwritten Notes – 47 Pages | ELEVIT",
+  description:
+    "Study Electronic Devices with 47 pages of handwritten engineering notes. Read, zoom, navigate, save your progress, and print the notes as a PDF on ELEVIT.",
+  alternates: {
+    canonical: PAGE_URL,
+  },
+  openGraph: {
+    title: "Electronic Devices Handwritten Notes | ELEVIT",
+    description:
+      "Access 47 pages of Electronic Devices handwritten notes for engineering study and exam preparation.",
+    url: PAGE_URL,
+    siteName: "ELEVIT",
+    type: "article",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Electronic Devices – Handwritten Notes Set 1",
+  description:
+    "A collection of 47 pages of handwritten Electronic Devices engineering notes.",
+  url: PAGE_URL,
+  educationalLevel: "Undergraduate",
+  learningResourceType: "Handwritten lecture notes",
+  inLanguage: "en",
+  numberOfPages: 47,
+  publisher: {
+    "@type": "Organization",
+    name: "ELEVIT",
+    url: BASE_URL,
+  },
+};
 
 export default function ElectronicDevicesNotes1() {
-  const images = Array.from({ length: 47 }, (_, i) => i + 1);
-
   return (
     <main
       id="top"
       className="relative min-h-screen overflow-hidden bg-[#070B16] text-[#F8FAFC]"
     >
-      {/* BACKGROUND ATMOSPHERE */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+        }}
+      />
+
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-1/2 top-[-220px] h-[520px] w-[720px] -translate-x-1/2 rounded-full bg-[#4D9BF5]/[0.08] blur-[140px]" />
         <div className="absolute right-[-180px] top-[900px] h-[400px] w-[400px] rounded-full bg-[#9B7BFF]/[0.05] blur-[140px]" />
@@ -25,9 +66,19 @@ export default function ElectronicDevicesNotes1() {
 
       <Navbar />
 
-      {/* SUBJECT HEADER */}
-      <section className="relative px-6 pb-14 pt-40 sm:pt-44">
+      <section className="relative px-6 pb-12 pt-40 sm:pt-44">
         <div className="mx-auto max-w-5xl">
+          <nav
+            aria-label="Breadcrumb"
+            className="mb-8 flex flex-wrap items-center gap-2 text-sm text-[#8292AC]"
+          >
+            <Link href="/notes" className="transition hover:text-[#38DDF2]">
+              Notes
+            </Link>
+            <span>/</span>
+            <span className="text-[#CBD5E1]">Electronic Devices</span>
+          </nav>
+
           <Link
             href="/notes"
             className="mb-10 inline-flex items-center gap-2 text-sm text-[#94A9C5] transition hover:text-[#38DDF2]"
@@ -49,9 +100,10 @@ export default function ElectronicDevicesNotes1() {
           </h1>
 
           <p className="mt-5 max-w-3xl text-base leading-8 text-[#94A9C5] sm:text-lg">
-            Explore your Electronic Devices handwritten notes,
-            organized page by page for focused learning,
-            understanding electronic components, and exam preparation.
+            Explore 47 pages of Electronic Devices handwritten notes.
+            Navigate through the pages, adjust the reading zoom, and save
+            your progress as you study electronic components and prepare
+            for your examinations.
           </p>
 
           <div className="mt-9 flex flex-wrap gap-3">
@@ -69,68 +121,34 @@ export default function ElectronicDevicesNotes1() {
         </div>
       </section>
 
-      {/* NOTES PAGES */}
       <section className="relative px-4 pb-24 sm:px-6">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#38DDF2]">
-                STUDY MATERIAL
-              </p>
-
-              <h2 className="text-2xl font-bold text-white sm:text-3xl">
-                Notes Set 1
-              </h2>
-            </div>
-
-            <p className="text-sm text-[#8292AC]">
-              47 handwritten pages
+          <div className="mb-8">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#38DDF2]">
+              STUDY MATERIAL
+            </p>
+            <h2 className="text-2xl font-bold text-white sm:text-3xl">
+              Electronic Devices – Notes Set 1
+            </h2>
+            <p className="mt-2 text-sm text-[#8292AC]">
+              Use the reader controls to navigate, zoom, save your place,
+              or print the complete notes set.
             </p>
           </div>
 
-          <div className="space-y-8">
-            {images.map((page) => (
-              <article
-                key={page}
-                className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111827] p-3 shadow-[0_12px_40px_rgba(0,0,0,0.18)] sm:rounded-3xl sm:p-5"
-              >
-                <div className="mb-4 flex items-center justify-between px-1">
-                  <p className="text-sm font-semibold text-[#CBD5E1]">
-                    Page {String(page).padStart(2, "0")}
-                  </p>
+          <NotesViewer />
 
-                  <span className="rounded-full border border-[#38DDF2]/15 bg-[#38DDF2]/[0.06] px-3 py-1 text-xs text-[#38DDF2]">
-                    Notes 1
-                  </span>
-                </div>
-
-                <div className="overflow-hidden rounded-xl bg-white sm:rounded-2xl">
-                  <Image
-                    src={`/notes/electronic-devices/Notes1/${page}.jpg`}
-                    alt={`Electronic Devices notes - Page ${page}`}
-                    width={1200}
-                    height={1700}
-                    sizes="(max-width: 768px) 100vw, 900px"
-                    className="h-auto w-full"
-                    priority={page === 1}
-                  />
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {/* END OF NOTES */}
-          <div className="mt-16 rounded-3xl border border-[#38DDF2]/15 bg-gradient-to-br from-[#141F32] to-[#111827] px-6 py-10 text-center sm:px-10">
+          <div className="mt-14 rounded-3xl border border-[#38DDF2]/15 bg-gradient-to-br from-[#141F32] to-[#111827] px-6 py-9 text-center sm:px-10">
             <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#38DDF2]/20 bg-[#38DDF2]/[0.08]">
               <BookOpen size={25} className="text-[#38DDF2]" />
             </div>
 
-            <h3 className="text-2xl font-bold text-white">
-              You’ve reached the end!
-            </h3>
+            <h2 className="text-2xl font-bold text-white">
+              Finished studying?
+            </h2>
 
             <p className="mt-3 text-sm leading-7 text-[#94A9C5]">
-              You have viewed all 47 pages in this notes set.
+              You have reached the end of this 47-page notes collection.
               Keep learning and revising with ELEVIT.
             </p>
 
@@ -155,14 +173,12 @@ export default function ElectronicDevicesNotes1() {
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="relative border-t border-white/[0.06] px-6 py-9">
         <div className="mx-auto max-w-7xl text-center">
           <p className="text-sm text-[#718096]">
             <span className="font-semibold text-[#38DDF2]">ELEVIT</span>
             {" "}· By Elevate Orbit
           </p>
-
           <p className="mt-2 text-xs text-[#526078]">
             Learn. Build. Grow.
           </p>
