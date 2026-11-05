@@ -134,9 +134,7 @@ export default function Home() {
     return notesCatalog
       .map((item) => {
         const name = normalizeText(item.name);
-
         const aliases = (item.aliases ?? []).map(normalizeText);
-
         const semester = normalizeText(item.semester);
 
         let score = 0;
@@ -144,7 +142,7 @@ export default function Home() {
         if (name === query) score = 100;
         else if (aliases.includes(query)) score = 95;
         else if (name.startsWith(query)) score = 90;
-        else if (aliases.some((alias) => alias.startsWith(query)) ) score = 85;
+        else if (aliases.some((alias) => alias.startsWith(query))) score = 85;
         else if (
           queryWords.some((queryWord) =>
             name.split(" ").some((word) => word.startsWith(queryWord))
@@ -706,24 +704,106 @@ export default function Home() {
         </section>
 
         {/* FOOTER */}
-        <footer className="border-t border-white/[0.07] bg-[#070B16] px-6 py-8">
-          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 text-sm text-[#71829C] sm:flex-row">
-            <p>
-              © {new Date().getFullYear()} ELEVIT. All rights reserved.
-            </p>
+        <footer className="border-t border-white/[0.07] bg-[#070B16] px-6 py-12">
+          <div className="mx-auto max-w-7xl">
+            <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
 
-            <div className="flex flex-wrap justify-center gap-6">
-              <Link href="/notes" className="transition hover:text-[#38DDF2]">
-                Notes
-              </Link>
+              {/* BRAND */}
+              <div>
+                <Link
+                  href="/"
+                  className="text-2xl font-extrabold tracking-widest text-white"
+                >
+                  ELEVIT<span className="text-[#38DDF2]">.</span>
+                </Link>
 
-              <Link href="/blog" className="transition hover:text-[#38DDF2]">
-                Insights
-              </Link>
+                <p className="mt-4 max-w-sm text-sm leading-7 text-[#94A9C5]">
+                  A student-centered platform for engineering education,
+                  innovation, research and technology.
+                </p>
 
-              <Link href="/admin/login" className="transition hover:text-[#38DDF2]">
-                Admin
-              </Link>
+                <p className="mt-4 text-sm font-medium text-[#38DDF2]">
+                  Learn. Build. Grow.
+                </p>
+              </div>
+
+              {/* EXPLORE */}
+              <div>
+                <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-white">
+                  Explore
+                </h3>
+
+                <div className="flex flex-col gap-3 text-sm text-[#94A9C5]">
+                  <Link href="/about" className="transition hover:text-[#38DDF2]">
+                    About ELEVIT
+                  </Link>
+
+                  <Link href="/notes" className="transition hover:text-[#38DDF2]">
+                    Notes
+                  </Link>
+
+                  <Link href="/blog" className="transition hover:text-[#38DDF2]">
+                    Insights
+                  </Link>
+
+                  <Link
+                    href="/study-timer"
+                    className="transition hover:text-[#38DDF2]"
+                  >
+                    Study Timer
+                  </Link>
+                </div>
+              </div>
+
+              {/* LEGAL & SUPPORT */}
+              <div>
+                <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-white">
+                  Legal &amp; Support
+                </h3>
+
+                <div className="flex flex-col gap-3 text-sm text-[#94A9C5]">
+                  <Link
+                    href="/privacy-policy"
+                    className="transition hover:text-[#38DDF2]"
+                  >
+                    Privacy Policy
+                  </Link>
+
+                  <Link
+                    href="/terms"
+                    className="transition hover:text-[#38DDF2]"
+                  >
+                    Terms &amp; Conditions
+                  </Link>
+
+                  {/* UPDATED CONTACT LINK */}
+                  <Link
+                    href="/contact"
+                    className="transition hover:text-[#38DDF2]"
+                  >
+                    Contact Us
+                  </Link>
+
+                  <a
+                    href="mailto:elevateorbit.contribute@gmail.com"
+                    className="transition hover:text-[#38DDF2]"
+                  >
+                    Contributions
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* COPYRIGHT */}
+            <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/[0.07] pt-6 text-center text-xs text-[#71829C] sm:flex-row">
+              <p>
+                © {new Date().getFullYear()} ELEVIT – Elevate Orbit.
+                All rights reserved.
+              </p>
+
+              <p>
+                Built for curious minds and future innovators.
+              </p>
             </div>
           </div>
         </footer>
