@@ -84,7 +84,6 @@ async function collectRoutes(
       priority,
     });
   }
-
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;
 
