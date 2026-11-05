@@ -150,7 +150,7 @@ export default function Home() {
         ) {
           score = 80;
         } else if (name.includes(query)) score = 70;
-        else if (aliases.some((alias) => alias.includes(query))) score = 65;
+        else if (aliases.some((alias) => alias.includes(query)) ) score = 65;
         else if (semester.includes(query)) score = 40;
 
         return { ...item, score };
@@ -343,7 +343,6 @@ export default function Home() {
 
         {/* HERO */}
         <section className="relative flex min-h-[90vh] flex-col items-center justify-center overflow-hidden px-5 pb-20 pt-32 text-center sm:px-6 sm:pt-36">
-
           {/* BACKGROUND GLOWS */}
           <div className="pointer-events-none absolute left-1/2 top-[42%] h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2563EB]/15 blur-[130px] sm:h-[650px] sm:w-[650px]" />
 
@@ -550,7 +549,6 @@ export default function Home() {
           <div className="pointer-events-none absolute left-1/2 top-0 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#38DDF2]/30 to-transparent" />
 
           <div className="mx-auto max-w-7xl">
-
             {/* SECTION HEADING */}
             <div className="mb-14 text-center sm:mb-16">
               <p className="mb-4 text-xs font-semibold tracking-[0.28em] text-[#38DDF2]">
@@ -569,7 +567,6 @@ export default function Home() {
 
             {/* ECOSYSTEM CARDS */}
             <div className="grid gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-
               {/* NOTES */}
               <button
                 type="button"
@@ -707,7 +704,6 @@ export default function Home() {
         <footer className="border-t border-white/[0.07] bg-[#070B16] px-6 py-12">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-
               {/* BRAND */}
               <div>
                 <Link
@@ -776,7 +772,13 @@ export default function Home() {
                     Terms &amp; Conditions
                   </Link>
 
-                  {/* UPDATED CONTACT LINK */}
+                  <Link
+                    href="/disclaimer"
+                    className="transition hover:text-[#38DDF2]"
+                  >
+                    Disclaimer
+                  </Link>
+
                   <Link
                     href="/contact"
                     className="transition hover:text-[#38DDF2]"
