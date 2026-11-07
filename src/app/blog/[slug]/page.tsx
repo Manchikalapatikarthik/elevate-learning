@@ -4,10 +4,132 @@ import path from "path";
 import matter from "gray-matter";
 import { remark } from "remark";
 import html from "remark-html";
+import sanitizeHtml from "sanitize-html";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 import Navbar from "../../components/Navbar";
+import { adminDb } from "../../../lib/firebaseAdmin";
+
+export const dynamic = "force-dynamic";
 
 type Params = Promise<{ slug: string }>;
+
+type Article = {
+  title: string;
+  date: string;
+  content: string;
+  coverImage?: string;
+  author?: string;
+  seoTitle?: string;
+  metaDescription?: string;
+};
+
+async function getArticle(slug: string): Promise<Article | null> {
+  // 1. Check Firestore for a published article
+
+  try {
+    const snapshot = await adminDb
+      .collection("articles")
+      .where("slug", "==", slug)
+      .where("status", "==", "published")
+      .limit(1)
+      .get();
+
+    if (!snapshot.empty) {
+      const data = snapshot.docs[0].data();
+
+      const publishedDate =
+        data.publishedAt?.toDate?.() ??
+        data.createdAt?.toDate?.() ??
+        null;
+
+      return {
+        title: String(data.title || ""),
+        date: publishedDate
+          ? publishedDate.toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+          : "",
+        content: String(data.content || ""),
+        coverImage: String(data.coverImage || ""),
+        author: String(data.author || ""),
+        seoTitle: String(data.seoTitle || ""),
+        metaDescription: String(data.metaDescription || data.excerpt || ""),
+      };
+    }
+  } catch (error) {
+    console.error("Firestore article fetch error:", error);
+  }
+
+  // 2. Fall back to existing Markdown articles
+
+  try {
+    const postsDirectory = path.join(
+      process.cwd(),
+      "content/blog"
+    );
+
+    const fullPath = path.join(
+      postsDirectory,
+      `${slug}.md`
+    );
+
+    if (!fs.existsSync(fullPath)) {
+      return null;
+    }
+
+    const fileContents = fs.readFileSync(fullPath, "utf8");
+    const matterResult = matter(fileContents);
+
+    const processedContent = await remark()
+      .use(html)
+      .process(matterResult.content);
+
+    return {
+      title: String(matterResult.data.title || slug),
+      date: String(matterResult.data.date || ""),
+      content: processedContent.toString(),
+      coverImage: "",
+      author: "",
+    };
+  } catch (error) {
+    console.error("Markdown article fetch error:", error);
+    return null;
+  }
+}
+
+// SEO metadata
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await getArticle(slug);
+
+  if (!article) {
+    return {
+      title: "Article Not Found | ELEVIT",
+    };
+  }
+
+  return {
+    title: article.seoTitle || `${article.title} | ELEVIT Journal`,
+    description:
+      article.metaDescription ||
+      `Read ${article.title} on the ELEVIT Journal.`,
+    openGraph: {
+      title: article.seoTitle || article.title,
+      description: article.metaDescription || "",
+      images: article.coverImage ? [article.coverImage] : [],
+      type: "article",
+    },
+  };
+}
 
 export default async function PostPage({
   params,
@@ -15,22 +137,41 @@ export default async function PostPage({
   params: Params;
 }) {
   const { slug } = await params;
+  const article = await getArticle(slug);
 
-  const fullPath = path.join(
-    process.cwd(),
-    "content/blog",
-    `${slug}.md`
-  );
+  if (!article) {
+    notFound();
+  }
 
-  const fileContents = fs.readFileSync(fullPath, "utf8");
+  // Sanitize HTML before rendering
 
-  const matterResult = matter(fileContents);
-
-  const processedContent = await remark()
-    .use(html)
-    .process(matterResult.content);
-
-  const contentHtml = processedContent.toString();
+  const contentHtml = sanitizeHtml(article.content, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+      "img",
+      "h1",
+      "h2",
+      "h3",
+      "span",
+      "figure",
+      "figcaption",
+      "iframe",
+    ]),
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      a: ["href", "name", "target", "rel"],
+      img: ["src", "alt", "title", "width", "height", "loading"],
+      iframe: ["src", "width", "height", "allow", "allowfullscreen"],
+      code: ["class"],
+      span: ["class"],
+      p: ["class"],
+    },
+    allowedSchemes: ["http", "https", "mailto"],
+    transformTags: {
+      a: sanitizeHtml.simpleTransform("a", {
+        rel: "noopener noreferrer",
+      }),
+    },
+  });
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#070B16] text-[#F8FAFC]">
@@ -50,8 +191,6 @@ export default async function PostPage({
       <section className="relative px-6 pb-14 pt-40 sm:pt-48">
         <div className="mx-auto max-w-4xl">
 
-          {/* JOURNAL LABEL */}
-
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#38DDF2]/20 bg-[#38DDF2]/[0.06] px-4 py-2">
             <span className="h-1.5 w-1.5 rounded-full bg-[#38DDF2] shadow-[0_0_10px_#38DDF2]" />
 
@@ -60,30 +199,44 @@ export default async function PostPage({
             </span>
           </div>
 
-          {/* TITLE */}
-
           <h1 className="text-4xl font-bold leading-[1.2] tracking-tight text-white sm:text-5xl md:text-6xl">
-            {matterResult.data.title}
+            {article.title}
           </h1>
 
-          {/* PUBLICATION DATE */}
-
-          {matterResult.data.date && (
+          {article.date && (
             <div className="mt-9 flex items-center gap-3">
               <div className="h-px w-8 bg-[#38DDF2]/60" />
 
               <p className="text-sm tracking-wide text-[#8292AC]">
-                {matterResult.data.date}
+                {article.date}
               </p>
             </div>
           )}
 
-          {/* DIVIDER */}
+          {article.author && (
+            <p className="mt-4 text-sm text-[#8292AC]">
+              By {article.author}
+            </p>
+          )}
 
           <div className="mt-12 h-px w-full bg-gradient-to-r from-[#38DDF2]/30 via-white/[0.08] to-transparent" />
 
         </div>
       </section>
+
+      {/* COVER IMAGE */}
+
+      {article.coverImage && (
+        <section className="relative px-6 pb-12">
+          <div className="mx-auto max-w-4xl">
+            <img
+              src={article.coverImage}
+              alt={article.title}
+              className="max-h-[500px] w-full rounded-2xl border border-white/[0.08] object-cover"
+            />
+          </div>
+        </section>
+      )}
 
       {/* ARTICLE CONTENT */}
 
@@ -244,10 +397,6 @@ export default async function PostPage({
     </main>
   );
 }
-
-/* =========================================================
-   BACK TO JOURNAL
-========================================================= */
 
 function LinkBack() {
   return (

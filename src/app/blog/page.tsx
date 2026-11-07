@@ -10,8 +10,10 @@ import {
 import Navbar from "../components/Navbar";
 import { getAllPosts } from "../../lib/posts";
 
-export default function BlogPage() {
-  const posts = getAllPosts();
+export const dynamic = "force-dynamic";
+
+export default async function BlogPage() {
+  const posts = await getAllPosts();
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#070B16] text-[#F8FAFC]">
@@ -31,8 +33,6 @@ export default function BlogPage() {
       <section className="relative px-6 pb-24 pt-40 sm:pb-28 sm:pt-48">
         <div className="mx-auto max-w-5xl text-center">
 
-          {/* EYEBROW */}
-
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#38DDF2]/20 bg-[#38DDF2]/[0.06] px-4 py-2">
             <span className="h-1.5 w-1.5 rounded-full bg-[#38DDF2] shadow-[0_0_10px_#38DDF2]" />
 
@@ -40,8 +40,6 @@ export default function BlogPage() {
               THE ELEVIT JOURNAL
             </span>
           </div>
-
-          {/* HEADING */}
 
           <h1 className="text-5xl font-bold leading-[1.12] tracking-[-0.045em] text-white sm:text-6xl md:text-[76px]">
             Knowledge that
@@ -51,15 +49,11 @@ export default function BlogPage() {
             </span>
           </h1>
 
-          {/* DESCRIPTION */}
-
           <p className="mx-auto mt-8 max-w-2xl text-base leading-8 text-[#94A9C5] sm:text-lg">
             A space for ideas, discoveries and perspectives
             across engineering, technology and innovation.
             Learn something new. See things differently.
           </p>
-
-          {/* DECORATIVE DIVIDER */}
 
           <div className="mx-auto mt-12 flex items-center justify-center gap-3">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#38DDF2]/60" />
@@ -76,8 +70,6 @@ export default function BlogPage() {
 
       <section className="relative px-6 pb-28">
         <div className="mx-auto max-w-7xl">
-
-          {/* SECTION INTRO */}
 
           <div className="mb-12 border-b border-white/[0.08] pb-8">
 
@@ -132,62 +124,83 @@ export default function BlogPage() {
                 <Link
                   href={`/blog/${post.slug}`}
                   key={post.slug}
-                  className="group relative flex min-h-[290px] flex-col overflow-hidden rounded-[26px] border border-white/[0.08] bg-[#111827]/75 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-[#38DDF2]/30 hover:bg-[#141F32] sm:p-9"
+                  className="group relative flex min-h-[290px] flex-col overflow-hidden rounded-[26px] border border-white/[0.08] bg-[#111827]/75 transition-all duration-300 hover:-translate-y-1 hover:border-[#38DDF2]/30 hover:bg-[#141F32]"
                 >
 
-                  {/* CARD GLOW */}
+                  {/* COVER IMAGE */}
 
-                  <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#38DDF2]/[0.035] blur-[70px] transition duration-500 group-hover:bg-[#38DDF2]/[0.09]" />
-
-                  {/* TOP ROW */}
-
-                  <div className="relative mb-9 flex items-center justify-between">
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold tracking-[0.12em] text-[#38DDF2]">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-
-                      <span className="h-1 w-1 rounded-full bg-[#526078]" />
-
-                      <span className="text-xs text-[#718096]">
-                        {post.date}
-                      </span>
-                    </div>
-
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.025] transition duration-300 group-hover:border-[#38DDF2]/30 group-hover:bg-[#38DDF2]/10">
-                      <MoveUpRight
-                        size={17}
-                        className="text-[#8292AC] transition group-hover:text-[#38DDF2]"
+                  {post.coverImage && (
+                    <div className="relative h-52 w-full overflow-hidden">
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-transparent" />
+                    </div>
+                  )}
+
+                  {/* CARD CONTENT */}
+
+                  <div className="relative flex flex-1 flex-col p-7 sm:p-9">
+
+                    {/* CARD GLOW */}
+
+                    <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#38DDF2]/[0.035] blur-[70px] transition duration-500 group-hover:bg-[#38DDF2]/[0.09]" />
+
+                    {/* TOP ROW */}
+
+                    <div className="relative mb-9 flex items-center justify-between">
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold tracking-[0.12em] text-[#38DDF2]">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+
+                        <span className="h-1 w-1 rounded-full bg-[#526078]" />
+
+                        <span className="text-xs text-[#718096]">
+                          {post.date}
+                        </span>
+                      </div>
+
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.025] transition duration-300 group-hover:border-[#38DDF2]/30 group-hover:bg-[#38DDF2]/10">
+                        <MoveUpRight
+                          size={17}
+                          className="text-[#8292AC] transition group-hover:text-[#38DDF2]"
+                        />
+                      </div>
+
                     </div>
 
-                  </div>
+                    {/* ARTICLE TITLE */}
 
-                  {/* ARTICLE TITLE */}
+                    <h3 className="relative max-w-xl text-2xl font-semibold leading-snug tracking-tight text-white transition duration-300 group-hover:text-[#BCEFFF] sm:text-[28px]">
+                      {post.title}
+                    </h3>
 
-                  <h3 className="relative max-w-xl text-2xl font-semibold leading-snug tracking-tight text-white transition duration-300 group-hover:text-[#BCEFFF] sm:text-[28px]">
-                    {post.title}
-                  </h3>
+                    {/* EXCERPT */}
 
-                  {/* EXCERPT */}
+                    <p className="relative mt-5 line-clamp-3 text-sm leading-7 text-[#94A9C5] sm:text-base">
+                      {post.excerpt}
+                    </p>
 
-                  <p className="relative mt-5 line-clamp-3 text-sm leading-7 text-[#94A9C5] sm:text-base">
-                    {post.excerpt}
-                  </p>
+                    {/* BOTTOM */}
 
-                  {/* BOTTOM */}
+                    <div className="relative mt-auto flex items-center justify-between pt-9">
 
-                  <div className="relative mt-auto flex items-center justify-between pt-9">
+                      <span className="text-sm font-medium text-[#38DDF2]">
+                        Read article
+                      </span>
 
-                    <span className="text-sm font-medium text-[#38DDF2]">
-                      Read article
-                    </span>
+                      <ArrowRight
+                        size={18}
+                        className="text-[#38DDF2] transition duration-300 group-hover:translate-x-1"
+                      />
 
-                    <ArrowRight
-                      size={18}
-                      className="text-[#38DDF2] transition duration-300 group-hover:translate-x-1"
-                    />
+                    </div>
 
                   </div>
 

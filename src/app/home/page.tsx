@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -150,7 +149,7 @@ export default function Home() {
         ) {
           score = 80;
         } else if (name.includes(query)) score = 70;
-        else if (aliases.some((alias) => alias.includes(query)) ) score = 65;
+        else if (aliases.some((alias) => alias.includes(query))) score = 65;
         else if (semester.includes(query)) score = 40;
 
         return { ...item, score };
@@ -792,6 +791,13 @@ export default function Home() {
                   >
                     Contributions
                   </a>
+
+                  <Link
+                    href="/admin/login"
+                    className="mt-1 inline-flex w-fit items-center gap-2 text-xs text-[#71829C] transition hover:text-[#38DDF2]"
+                  >
+                    Admin Login
+                  </Link>
                 </div>
               </div>
             </div>
